@@ -1,79 +1,80 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using UnityEngine;
 
 namespace SpeenChroma2
 {
     [BepInPlugin(Guid, Name, Version)]
     public class Main : BaseUnityPlugin
     {
+        [Flags]
+        private enum ChromaNoteType
+        {
+            NoteA = 0x01,
+            NoteB = 0x02,
+            Beat = 0x04,
+            SpinLeft = 0x08,
+            SpinRight = 0x10,
+            Scratch = 0x20,
+            Ancillary = 0x40,
+            All = NoteA | NoteB | Beat | SpinLeft | SpinRight | Scratch | Ancillary,
+        }
+        
         private const string Guid = "srxd.raoul1808.speenchroma2";
         private const string Name = "Speen Chroma 2";
         private const string Version = "0.1.0";
 
         private static ManualLogSource _logger;
+
+        private static ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "SpeenChroma2.cfg"), true);
         
         private void Awake()
         {
             _logger = Logger;
             Logger.LogMessage("Hi from Speen Chroma 2!");
+
+            var enableChroma = _config.Bind("Chroma",
+                "Enable",
+                true,
+                "If set to false, no color-changing effects will occur.");
+            ChromaPatches.EnableChroma = enableChroma.Value;
+
+            var affectedNotes = _config.Bind("Chroma",
+                "AffectedNotes",
+                ChromaNoteType.All,
+                "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
+            ChromaPatches.AffectedNotes = ParseAffectedNotes(affectedNotes.Value);
+            
             Harmony harmony = new Harmony(Guid);
-            harmony.PatchAll(typeof(QuickPatches));
+            harmony.PatchAll(typeof(ChromaPatches));
             Logger.LogMessage("Patched methods: " + harmony.GetPatchedMethods().Count());
         }
 
-        internal static void Log(object msg) => _logger.LogMessage(msg);
-
-        internal class QuickPatches
+        private NoteColorType[] ParseAffectedNotes(ChromaNoteType value)
         {
-            private static List<ColorValueWrapper> _colors = new List<ColorValueWrapper>();
-            
-            [HarmonyPatch(
-                 typeof(ColorValueWrapper),
-                 MethodType.Constructor,
-                 new Type []
-                 {
-                     typeof(NoteColorType),
-                     typeof(int),
-                     typeof(IPlayerValue),
-                     typeof(IPlayerValue),
-                     typeof(IPlayerValue),
-                 })]
-            [HarmonyPostfix]
-            private static void ColorValueWrapper_Constructor_Postfix(
-                ColorValueWrapper __instance,
-                NoteColorType noteType,
-                int colorProfileIndex,
-                IPlayerValue hueValue,
-                IPlayerValue saturationValue,
-                IPlayerValue lightnessValue)
-            {
-                Log(colorProfileIndex + " " + __instance.NoteType + " " + __instance.Hue);
-                if (colorProfileIndex == 1)
-                {
-                    _colors.Add(__instance);
-                }
-            }
-
-            [HarmonyPatch(typeof(Track), nameof(Track.Update))]
-            [HarmonyPostfix]
-            private static void Track_Update_Postfix()
-            {
-                foreach (var wrapper in _colors)
-                {
-                    float hue = wrapper.Hue;
-                    hue += 1f * Time.deltaTime;
-                    if (hue > 1f)
-                        hue -= 1f;
-                    if (hue < 0f)
-                        hue += 1f;
-                    wrapper.Hue = hue;
-                }
-            }
+            var colorTypes = new List<NoteColorType>();
+            if (value.HasFlag(ChromaNoteType.NoteA))
+                colorTypes.Add(NoteColorType.NoteA);
+            if (value.HasFlag(ChromaNoteType.NoteB))
+                colorTypes.Add(NoteColorType.NoteB);
+            if (value.HasFlag(ChromaNoteType.Beat))
+                colorTypes.Add(NoteColorType.Beat);
+            if (value.HasFlag(ChromaNoteType.SpinLeft))
+                colorTypes.Add(NoteColorType.SpinLeft);
+            if (value.HasFlag(ChromaNoteType.SpinRight))
+                colorTypes.Add(NoteColorType.SpinRight);
+            if (value.HasFlag(ChromaNoteType.Scratch))
+                colorTypes.Add(NoteColorType.Scratch);
+            if (value.HasFlag(ChromaNoteType.Ancillary))
+                colorTypes.Add(NoteColorType.Ancillary);
+            return colorTypes.ToArray();
         }
+
+        internal static void Log(object msg) => _logger.LogMessage(msg);
     }
 }
