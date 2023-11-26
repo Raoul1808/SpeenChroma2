@@ -11,6 +11,7 @@ namespace SpeenChroma2
 
         public static bool EnableChroma { get; set; }
         public static NoteColorType[] AffectedNotes { get; set; }
+        public static float ChromaSpeed { get; set; }
 
         [HarmonyPatch(
             typeof(ColorValueWrapper),
@@ -48,7 +49,7 @@ namespace SpeenChroma2
             {
                 if (!_colorValueWrappers.TryGetValue(note, out var wrapper)) return;
                 float hue = wrapper.Hue;
-                hue += 1f * Time.deltaTime;
+                hue += ChromaSpeed * 0.1f * Time.deltaTime;
                 if (hue > 1f)
                     hue -= 1f;
                 if (hue < 0f)

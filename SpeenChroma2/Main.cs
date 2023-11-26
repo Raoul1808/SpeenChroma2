@@ -49,6 +49,12 @@ namespace SpeenChroma2
                 ChromaNoteType.All,
                 "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
             ChromaPatches.AffectedNotes = ParseAffectedNotes(affectedNotes.Value);
+
+            var rainbowSpeed = _config.Bind("Chroma.Rainbow",
+                "Speed",
+                1f,
+                new ConfigDescription("Chroma rainbow speed.", new AcceptableValueRange<float>(0f, 100f)));
+            ChromaPatches.ChromaSpeed = rainbowSpeed.Value;
             
             Harmony harmony = new Harmony(Guid);
             harmony.PatchAll(typeof(ChromaPatches));
