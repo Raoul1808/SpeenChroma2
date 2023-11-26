@@ -8,11 +8,20 @@
       <Reference Include="0Harmony">
         <HintPath>..\srxd-dir\BepInEx\core\0Harmony.dll</HintPath>
       </Reference>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\srxd-dir\SpinRhythm_Data\Managed\Assembly-CSharp.dll</HintPath>
+      </Reference>
       <Reference Include="BepInEx">
         <HintPath>..\srxd-dir\BepInEx\core\BepInEx.dll</HintPath>
       </Reference>
       <Reference Include="BepInEx.Harmony">
         <HintPath>..\srxd-dir\BepInEx\core\BepInEx.Harmony.dll</HintPath>
+      </Reference>
+      <Reference Include="SSD.Game">
+        <HintPath>..\srxd-dir\SpinRhythm_Data\Managed\SSD.Game.dll</HintPath>
+      </Reference>
+      <Reference Include="SSD.PlayerServiceManager">
+        <HintPath>..\srxd-dir\SpinRhythm_Data\Managed\SSD.PlayerServiceManager.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine">
         <HintPath>..\srxd-dir\SpinRhythm_Data\Managed\UnityEngine.dll</HintPath>
