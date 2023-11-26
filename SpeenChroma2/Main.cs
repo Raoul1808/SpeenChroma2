@@ -56,6 +56,8 @@ namespace SpeenChroma2
                 new ConfigDescription("Chroma rainbow speed.", new AcceptableValueRange<float>(0f, 100f)));
             ChromaPatches.ChromaSpeed = rainbowSpeed.Value;
             
+            ChromaPatches.GentlyStealIMeanBorrowDefaultColorValues();
+            
             Harmony harmony = new Harmony(Guid);
             harmony.PatchAll(typeof(ChromaPatches));
             Logger.LogMessage("Patched methods: " + harmony.GetPatchedMethods().Count());

@@ -7,11 +7,18 @@ namespace SpeenChroma2
 {
     public static class ChromaPatches
     {
+        private static Dictionary<NoteColorType, (float Hue, float Saturation, float Lightness)> _defaultColors;
         private static Dictionary<NoteColorType, ColorValueWrapper> _colorValueWrappers = new Dictionary<NoteColorType, ColorValueWrapper>();
 
         public static bool EnableChroma { get; set; }
         public static NoteColorType[] AffectedNotes { get; set; }
         public static float ChromaSpeed { get; set; }
+
+        public static void GentlyStealIMeanBorrowDefaultColorValues()
+        {
+            _defaultColors = (Dictionary<NoteColorType, (float, float, float)>) AccessTools.Field(typeof(ColorValueWrapper), "colorDefaults").GetValue(null);
+            Main.Log("Gently stole-I mean borrowed default colors: " + _defaultColors);
+        }
 
         [HarmonyPatch(
             typeof(ColorValueWrapper),
@@ -36,6 +43,7 @@ namespace SpeenChroma2
             Main.Log(colorProfileIndex + " " + __instance.NoteType + " " + __instance.Hue);
             if (colorProfileIndex == 1)
             {
+                __instance.Hue = _defaultColors[noteType].Hue;
                 _colorValueWrappers.Add(noteType, __instance);
             }
         }
