@@ -31,6 +31,16 @@ namespace SpeenChroma2
                 v => v == 0 ? "UI_No" : "UI_Yes"
             );
 
+            CreateMultiChoiceButton(
+                _chromaSection.transform,
+                "RainbowSpeed",
+                "Rainbow Speed",
+                (int)(ChromaPatches.ChromaSpeed * 10),
+                Main.SetRainbowSpeed,
+                () => new IntRange(0, 101),
+                v => v.ToString()
+            );
+
             var noteTypes = (ChromaNoteType[]) Enum.GetValues(typeof(ChromaNoteType));
             foreach (var noteType in noteTypes)
             {

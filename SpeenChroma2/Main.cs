@@ -22,6 +22,7 @@ namespace SpeenChroma2
 
         private static ConfigEntry<bool> _enableChromaEntry;
         private static ConfigEntry<ChromaNoteType> _affectedNotesEntry;
+        private static ConfigEntry<float> _rainbowSpeed;
         
         private void Awake()
         {
@@ -40,11 +41,11 @@ namespace SpeenChroma2
                 "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
             ChromaPatches.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
 
-            var rainbowSpeed = _config.Bind("Chroma.Rainbow",
+            _rainbowSpeed = _config.Bind("Chroma.Rainbow",
                 "Speed",
                 1f,
-                new ConfigDescription("Chroma rainbow speed.", new AcceptableValueRange<float>(0f, 100f)));
-            ChromaPatches.ChromaSpeed = rainbowSpeed.Value;
+                new ConfigDescription("Chroma rainbow speed.", new AcceptableValueRange<float>(0f, 10f)));
+            ChromaPatches.ChromaSpeed = _rainbowSpeed.Value;
             
             ChromaPatches.GentlyStealIMeanBorrowDefaultColorValues();
             
@@ -94,6 +95,12 @@ namespace SpeenChroma2
 
             ChromaPatches.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
             ChromaPatches.ResetColorBlenders();
+        }
+
+        internal static void SetRainbowSpeed(int speed)
+        {
+            _rainbowSpeed.Value = speed / 10f;
+            ChromaPatches.ChromaSpeed = speed / 10f;
         }
 
         internal static void Log(object msg) => _logger.LogMessage(msg);
