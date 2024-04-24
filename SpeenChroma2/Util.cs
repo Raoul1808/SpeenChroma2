@@ -13,15 +13,15 @@ namespace SpeenChroma2
                 case ChromaNoteType.NoteB:
                     return "Note B";
                 case ChromaNoteType.Beat:
-                    return "Beat";
+                    return "Beat Bar";
                 case ChromaNoteType.SpinLeft:
-                    return "Spin Left";
+                    return "Left Spin";
                 case ChromaNoteType.SpinRight:
-                    return "Spin Right";
+                    return "Right Spin";
                 case ChromaNoteType.Scratch:
                     return "Scratch";
                 case ChromaNoteType.Ancillary:
-                    return "Ancillary";
+                    return "Highlights";
                 case ChromaNoteType.All:
                     return "All";
                 default:
