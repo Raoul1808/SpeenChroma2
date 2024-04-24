@@ -32,17 +32,19 @@ namespace SpeenChroma2
         private static ManualLogSource _logger;
 
         private static ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "SpeenChroma2.cfg"), true);
+
+        private static ConfigEntry<bool> _enableChromaEntry;
         
         private void Awake()
         {
             _logger = Logger;
             Logger.LogMessage("Hi from Speen Chroma 2!");
 
-            var enableChroma = _config.Bind("Chroma",
+            _enableChromaEntry = _config.Bind("Chroma",
                 "Enable",
                 true,
                 "If set to false, no color-changing effects will occur.");
-            ChromaPatches.EnableChroma = enableChroma.Value;
+            ChromaPatches.EnableChroma = _enableChromaEntry.Value;
 
             var affectedNotes = _config.Bind("Chroma",
                 "AffectedNotes",
@@ -81,6 +83,14 @@ namespace SpeenChroma2
             if (value.HasFlag(ChromaNoteType.Ancillary))
                 colorTypes.Add(NoteColorType.Ancillary);
             return colorTypes.ToArray();
+        }
+
+        internal static void SetChromaEnabled(bool enabled)
+        {
+            ChromaPatches.EnableChroma = enabled;
+            _enableChromaEntry.Value = enabled;
+            if (!enabled)
+                ChromaPatches.ResetColorBlenders();
         }
 
         internal static void Log(object msg) => _logger.LogMessage(msg);
