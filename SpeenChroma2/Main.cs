@@ -12,19 +12,6 @@ namespace SpeenChroma2
     [BepInPlugin(Guid, Name, Version)]
     public class Main : BaseUnityPlugin
     {
-        [Flags]
-        private enum ChromaNoteType
-        {
-            NoteA = 0x01,
-            NoteB = 0x02,
-            Beat = 0x04,
-            SpinLeft = 0x08,
-            SpinRight = 0x10,
-            Scratch = 0x20,
-            Ancillary = 0x40,
-            All = NoteA | NoteB | Beat | SpinLeft | SpinRight | Scratch | Ancillary,
-        }
-        
         private const string Guid = "srxd.raoul1808.speenchroma2";
         private const string Name = "Speen Chroma 2";
         private const string Version = "1.0.0";
@@ -34,6 +21,7 @@ namespace SpeenChroma2
         private static ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "SpeenChroma2.cfg"), true);
 
         private static ConfigEntry<bool> _enableChromaEntry;
+        private static ConfigEntry<ChromaNoteType> _affectedNotesEntry;
         
         private void Awake()
         {
@@ -46,11 +34,11 @@ namespace SpeenChroma2
                 "If set to false, no color-changing effects will occur.");
             ChromaPatches.EnableChroma = _enableChromaEntry.Value;
 
-            var affectedNotes = _config.Bind("Chroma",
+            _affectedNotesEntry = _config.Bind("Chroma",
                 "AffectedNotes",
                 ChromaNoteType.All,
                 "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
-            ChromaPatches.AffectedNotes = ParseAffectedNotes(affectedNotes.Value);
+            ChromaPatches.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
 
             var rainbowSpeed = _config.Bind("Chroma.Rainbow",
                 "Speed",
@@ -65,7 +53,7 @@ namespace SpeenChroma2
             Logger.LogMessage("Patched methods: " + harmony.GetPatchedMethods().Count());
         }
 
-        private NoteColorType[] ParseAffectedNotes(ChromaNoteType value)
+        private static NoteColorType[] ParseAffectedNotes(ChromaNoteType value)
         {
             var colorTypes = new List<NoteColorType>();
             if (value.HasFlag(ChromaNoteType.NoteA))
@@ -91,6 +79,21 @@ namespace SpeenChroma2
             _enableChromaEntry.Value = enabled;
             if (!enabled)
                 ChromaPatches.ResetColorBlenders();
+        }
+
+        internal static void SetNoteTypeEnabled(ChromaNoteType noteType, bool enabled)
+        {
+            if (enabled)
+            {
+                _affectedNotesEntry.Value |= noteType;
+            }
+            else
+            {
+                _affectedNotesEntry.Value &= ~noteType;
+            }
+
+            ChromaPatches.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
+            ChromaPatches.ResetColorBlenders();
         }
 
         internal static void Log(object msg) => _logger.LogMessage(msg);

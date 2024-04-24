@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
-using XDMenuPlay;
 using XDMenuPlay.Customise;
-using Object = UnityEngine.Object;
 
 namespace SpeenChroma2
 {
@@ -16,8 +14,6 @@ namespace SpeenChroma2
         public static bool EnableChroma { get; set; }
         public static NoteColorType[] AffectedNotes { get; set; }
         public static float ChromaSpeed { get; set; }
-
-        private static GameObject _chromaToggle;
 
         public static void GentlyStealIMeanBorrowDefaultColorValues()
         {
@@ -68,21 +64,8 @@ namespace SpeenChroma2
         [HarmonyPostfix]
         private static void InsertCustomChromaSection(XDCustomiseMenu __instance)
         {
-            if (_chromaToggle != null) return;
-            var container = __instance.transform.Find("MenuContainer/CustomiseTabsContainer");
-            var colorSettingsSection = container.Find("CustomiseSkinsTab/Scroll View/Viewport/Content CustomiseSkinsTab Prefab(Clone)/Note Colors Section Variant");
-            var noteColorProfileButton = colorSettingsSection.Find("NoteColorProfile");
-            Main.Log(colorSettingsSection);
-            _chromaToggle = Object.Instantiate(noteColorProfileButton.gameObject, colorSettingsSection);
-            _chromaToggle.name = "ChromaToggle";
-            _chromaToggle.transform.name = "ChromaToggle";
-            _chromaToggle.transform.SetSiblingIndex(1);
-            var multiChoice = _chromaToggle.GetComponent<XDNavigableOptionMultiChoice>();
-            Object.Destroy(_chromaToggle.GetComponent<XDNavigableOptionMultiChoice_IntValue>());
-            multiChoice.state.callbacks = new XDNavigableOptionMultiChoice.Callbacks();
-            multiChoice.SetCallbacksAndValue(EnableChroma ? 1 : 0, v => Main.SetChromaEnabled(v == 1), () => new IntRange(0, 2), v => v == 0 ? "UI_No" : "UI_Yes");
-            var optionLabel = _chromaToggle.transform.Find("OptionLabel").GetComponent<TranslatedTextMeshPro>();
-            optionLabel.text.text = "Enable Chroma";
+            if (!ChromaUI.Initialized)
+                ChromaUI.Initialize(__instance);
         }
 
         [HarmonyPatch(typeof(Track), nameof(Track.Update))]
