@@ -136,20 +136,44 @@ namespace SpeenChroma2
                     trigger.Duration = 0f;
                     noteType = Util.GetNoteTypeForString(elems[1]);
                     string colStr = elems[2];
-                    if (colStr == "default")
+                    var col = colStr == "default"
+                        ? ChromaManager.GetDefaultColorForNoteType(noteType)
+                        : HslColor.FromHexRgb(colStr);
+                    trigger.StartColor = col;
+                    trigger.EndColor = col;
+                    if (!dict.TryGetValue(noteType, out var list))
                     {
-                        var col = ChromaManager.GetDefaultColorForNoteType(noteType);
-                        trigger.StartColor = col;
-                        trigger.EndColor = col;
-                        if (!dict.TryGetValue(noteType, out var list))
-                        {
-                            list = new List<ChromaTrigger>();
-                            dict.Add(noteType, list);
-                        }
-
-                        list.Add(trigger);
-                        continue;
+                        list = new List<ChromaTrigger>();
+                        dict.Add(noteType, list);
                     }
+
+                    list.Add(trigger);
+                    continue;
+                }
+
+                if (elems.Length < 4)
+                    continue;
+
+                if (elems[0] == "instant")
+                {
+                    noteType = Util.GetNoteTypeForString(elems[1]);
+                    float time = float.Parse(elems[2]);
+                    string colStr = elems[3];
+                    var col = colStr == "default"
+                        ? ChromaManager.GetDefaultColorForNoteType(noteType)
+                        : HslColor.FromHexRgb(colStr);
+                    trigger.Time = time;
+                    trigger.Duration = 0f;
+                    trigger.StartColor = col;
+                    trigger.EndColor = col;
+                    if (!dict.TryGetValue(noteType, out var list))
+                    {
+                        list = new List<ChromaTrigger>();
+                        dict.Add(noteType, list);
+                    }
+
+                    list.Add(trigger);
+                    continue;
                 }
 
                 // Second line check
