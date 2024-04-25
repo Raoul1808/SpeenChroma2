@@ -13,7 +13,7 @@ namespace SpeenChroma2
     {
         private const string Guid = "srxd.raoul1808.speenchroma2";
         private const string Name = "Speen Chroma 2";
-        private const string Version = "1.0.0";
+        private const string Version = "2.0.0";
 
         private static ManualLogSource _logger;
 
