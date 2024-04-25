@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SpeenChroma2
 {
@@ -46,6 +47,8 @@ namespace SpeenChroma2
 
         public static void SetColorForNoteType(NoteColorType colorType, HslColor color)
         {
+            if (!EnableChroma || !AffectedNotes.Contains(colorType))
+                return;
             color.WrapAndClamp();
             _colorBlenders[colorType].Hue = color.Hue;
             _colorBlenders[colorType].Saturation = color.Saturation;
