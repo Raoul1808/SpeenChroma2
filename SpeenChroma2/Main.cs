@@ -20,8 +20,9 @@ namespace SpeenChroma2
         private static ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "SpeenChroma2.cfg"), true);
 
         private static ConfigEntry<bool> _enableChromaEntry;
-        private static ConfigEntry<ChromaNoteType> _affectedNotesEntry;
+        private static ConfigEntry<ChromaNoteType> _affectedNotesRainbowEntry;
         private static ConfigEntry<float> _rainbowSpeed;
+        private static ConfigEntry<bool> _enableRainbowEntry;
         
         private void Awake()
         {
@@ -34,12 +35,18 @@ namespace SpeenChroma2
                 "If set to false, no color-changing effects will occur.");
             ChromaManager.EnableChroma = _enableChromaEntry.Value;
 
-            _affectedNotesEntry = _config.Bind("Chroma",
+            _affectedNotesRainbowEntry = _config.Bind("Chroma.Rainbow",
                 "AffectedNotes",
                 ChromaNoteType.All,
                 "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
-            ChromaManager.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
+            ChromaManager.AffectedNotesRainbow = ParseAffectedNotes(_affectedNotesRainbowEntry.Value);
 
+            _enableRainbowEntry = _config.Bind("Chroma.Rainbow",
+                "Enable",
+                true,
+                "If set to false, no rainbow effects will occur.");
+            ChromaManager.EnableRainbow = true;
+            
             _rainbowSpeed = _config.Bind("Chroma.Rainbow",
                 "Speed",
                 1f,
@@ -82,18 +89,26 @@ namespace SpeenChroma2
                 ChromaManager.ResetColorBlenders();
         }
 
-        internal static void SetNoteTypeEnabled(ChromaNoteType noteType, bool enabled)
+        internal static void SetRainbowEnabled(bool enabled)
+        {
+            ChromaManager.EnableRainbow = enabled;
+            _enableRainbowEntry.Value = enabled;
+            if (!enabled)
+                ChromaManager.ResetColorBlenders();
+        }
+
+        internal static void SetNoteTypeRainbowEnabled(ChromaNoteType noteType, bool enabled)
         {
             if (enabled)
             {
-                _affectedNotesEntry.Value |= noteType;
+                _affectedNotesRainbowEntry.Value |= noteType;
             }
             else
             {
-                _affectedNotesEntry.Value &= ~noteType;
+                _affectedNotesRainbowEntry.Value &= ~noteType;
             }
 
-            ChromaManager.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
+            ChromaManager.AffectedNotesRainbow = ParseAffectedNotes(_affectedNotesRainbowEntry.Value);
             ChromaManager.ResetColorBlenders();
         }
 

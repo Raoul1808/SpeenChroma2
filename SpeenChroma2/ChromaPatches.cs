@@ -54,8 +54,8 @@ namespace SpeenChroma2
         [HarmonyPostfix]
         private static void Track_Update_Postfix()
         {
-            if (!ChromaManager.EnableChroma) return;
-            foreach (var note in ChromaManager.AffectedNotes)
+            if (!ChromaManager.EnableChroma || !ChromaManager.EnableRainbow) return;
+            foreach (var note in ChromaManager.AffectedNotesRainbow)
             {
                 var blender = ChromaManager.GetBlenderForNoteType(note);
                 float hue = blender.hue;

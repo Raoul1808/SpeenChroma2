@@ -176,6 +176,37 @@ namespace SpeenChroma2
                 list2.Add(trigger);
             }
 
+            if (dict.Count == 0)
+                return dict;
+            
+            (string, NoteColorType)[] pairs = {
+                ("ChromaNoteA", NoteColorType.NoteA),
+                ("ChromaNoteB", NoteColorType.NoteB),
+                ("ChromaBeat", NoteColorType.Beat),
+                ("ChromaSpinLeft", NoteColorType.SpinLeft),
+                ("ChromaSpinRight", NoteColorType.SpinRight),
+                ("ChromaScratch", NoteColorType.Scratch),
+                ("ChromaAncillary", NoteColorType.Ancillary),
+            };
+
+            // Force adding default values to prevent rainbow effect from happening
+            // TODO: FIND CLEANER WAY TO DISABLE RAINBOW WHEN TRIGGERS ARE ACTIVE
+            foreach (var p in pairs)
+            {
+                if (!dict.TryGetValue(p.Item2, out var list))
+                {
+                    list = new List<ChromaTrigger>();
+                    dict.Add(p.Item2, list);
+                }
+                list.Add(new ChromaTrigger
+                {
+                    Time = -10f,
+                    Duration = 0f,
+                    StartColor = ChromaManager.GetDefaultColorForNoteType(p.Item2),
+                    EndColor = ChromaManager.GetDefaultColorForNoteType(p.Item2),
+                });
+            }
+
             foreach (var pair in dict)
             {
                 pair.Value.Sort((t1, t2) => t1.Time.CompareTo(t2.Time));

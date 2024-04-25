@@ -6,7 +6,8 @@ namespace SpeenChroma2
     public static class ChromaManager
     {
         public static bool EnableChroma { get; set; }
-        public static NoteColorType[] AffectedNotes { get; set; }
+        public static NoteColorType[] AffectedNotesRainbow { get; set; }
+        public static bool EnableRainbow { get; set; }
         public static float RainbowSpeed { get; set; }
         
         private static Dictionary<NoteColorType, (float Hue, float Saturation, float Lightness)> _defaultColors;
@@ -47,7 +48,7 @@ namespace SpeenChroma2
 
         public static void SetColorForNoteType(NoteColorType colorType, HslColor color)
         {
-            if (!EnableChroma || !AffectedNotes.Contains(colorType))
+            if (!EnableChroma)
                 return;
             color.WrapAndClamp();
             _colorBlenders[colorType].Hue = color.Hue;
