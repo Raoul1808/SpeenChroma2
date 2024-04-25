@@ -38,6 +38,9 @@
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>..\srxd-dir\SpinRhythm_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       </Reference>
+      <Reference Include="UnityEngine.IMGUIModule">
+        <HintPath>..\srxd-dir\SpinRhythm_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine.UI">
         <HintPath>..\srxd-dir\SpinRhythm_Data\Managed\UnityEngine.UI.dll</HintPath>
       </Reference>

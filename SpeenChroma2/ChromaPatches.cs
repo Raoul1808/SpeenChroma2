@@ -1,6 +1,7 @@
 using System;
 using HarmonyLib;
 using UnityEngine;
+using XDMenuPlay;
 using XDMenuPlay.Customise;
 
 namespace SpeenChroma2
@@ -40,6 +41,13 @@ namespace SpeenChroma2
         {
             if (!ChromaUI.Initialized)
                 ChromaUI.Initialize(__instance);
+        }
+
+        [HarmonyPatch(typeof(XDColorPickerPopout), nameof(XDColorPickerPopout.Start))]
+        [HarmonyPostfix]
+        private static void InsertCopyColorButton(XDColorPickerPopout __instance)
+        {
+            ChromaUI.AddCopyButton(__instance);
         }
 
         [HarmonyPatch(typeof(Track), nameof(Track.Update))]

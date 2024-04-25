@@ -47,6 +47,51 @@ namespace SpeenChroma2
             Lightness = Mathf.Clamp01(Lightness);
         }
 
+        public string ToHexRgb()
+        {
+            WrapAndClamp();
+            double hue = Hue * 360.0;
+            double chroma = (1 - Math.Abs(2 * Lightness - 1)) * Saturation;
+            double x = chroma * (1 - Math.Abs((hue / 60.0) % 2 - 1));
+            double m = Lightness - chroma / 2.0;
+            double r1 = 0, g1 = 0, b1 = 0;
+            if (0 <= hue && hue < 60)
+            {
+                r1 = chroma;
+                g1 = x;
+            }
+            else if (60 <= hue && hue < 120)
+            {
+                r1 = x;
+                g1 = chroma;   
+            }
+            else if (120 <= hue && hue < 180)
+            {
+                g1 = chroma;
+                b1 = x;
+            }
+            else if (180 <= hue && hue < 240)
+            {
+                g1 = x;
+                b1 = chroma;
+            }
+            else if (240 <= hue && hue < 300)
+            {
+                b1 = chroma;
+                r1 = x;
+            }
+            else if (300 <= hue && hue < 360)
+            {
+                b1 = x;
+                r1 = chroma;
+            }
+
+            int r = (int)Math.Round((r1 + m) * 255);
+            int g = (int)Math.Round((g1 + m) * 255);
+            int b = (int)Math.Round((b1 + m) * 255);
+            return r.ToString("x2") + g.ToString("x2") + b.ToString("x2");
+        }
+
         public static HslColor FromHexRgb(string hex)
         {
             if (hex[0] == '#')
@@ -93,6 +138,11 @@ namespace SpeenChroma2
             if (h < 0) h += 1;
             if (h > 1) h -= 1;
             return new HslColor((float)h, (float)s, (float)l);
+        }
+
+        public override string ToString()
+        {
+            return $"{{H: {Hue}, S: {Saturation}, L: {Lightness}}}";
         }
     }
 }

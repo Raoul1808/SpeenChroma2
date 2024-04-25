@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using XDMenuPlay;
 using XDMenuPlay.Customise;
 using Object = UnityEngine.Object;
@@ -59,6 +60,38 @@ namespace SpeenChroma2
                     v => v == 0 ? "UI_No" : "UI_Yes"
                 );
             }
+        }
+
+        public static void AddCopyButton(XDColorPickerPopout instance)
+        {
+            var popout = instance.gameObject.transform;
+            if (popout.Find("CopyHexButton") != null)
+                return;
+            var resetButton = popout.Find("ResetButton");
+            var copyHexButton = Object.Instantiate(resetButton, popout);
+            copyHexButton.name = "CopyHexButton";
+            copyHexButton.transform.name = "CopyHexButton";
+            var text = copyHexButton.transform.Find("OptionLabel").GetComponent<TranslatedTextMeshPro>();
+            text.text.text = "Copy Hex Code";
+            Object.Destroy(copyHexButton.transform.Find("ValueContainer/Visuals/Icon").gameObject);
+            var icon = Object.Instantiate(
+                BuildSettingsAsset.Instance.popoutButtonPrefab.transform.Find("ValueContainer/Visuals/Icon").gameObject,
+                copyHexButton.transform.Find("ValueContainer/Visuals"));
+            icon.name = "Icon";
+            icon.transform.name = "Icon";
+            var button = copyHexButton.GetComponent<XDNavigableButton>();
+            button.onClick = new Button.ButtonClickedEvent();
+            button.onClick.AddListener(() =>
+            {
+                Main.Log(instance.currentWrapper.Hue + " " + instance.currentWrapper.Saturation + " " + instance.currentWrapper.Lightness);
+                var col = new HslColor(instance.currentWrapper.Hue, instance.currentWrapper.Saturation, instance.currentWrapper.Lightness);
+                Main.Log(col);
+                col.WrapAndClamp();
+                Main.Log(col);
+                string hex = "#" + col.ToHexRgb();
+                GUIUtility.systemCopyBuffer = hex;
+                NotificationSystemGUI.AddMessage($"Copied hex color {hex} to clipboard");
+            });
         }
 
         private static void CreateChromaSection(XDCustomiseMenu instance)
