@@ -25,7 +25,7 @@ namespace SpeenChroma2
                 _chromaSection.transform,
                 "EnableChroma",
                 "Enable Chroma",
-                ChromaPatches.EnableChroma ? 1 : 0,
+                ChromaManager.EnableChroma ? 1 : 0,
                 v => Main.SetChromaEnabled(v == 1),
                 () => new IntRange(0, 2),
                 v => v == 0 ? "UI_No" : "UI_Yes"
@@ -35,7 +35,7 @@ namespace SpeenChroma2
                 _chromaSection.transform,
                 "RainbowSpeed",
                 "Rainbow Speed",
-                (int)(ChromaPatches.ChromaSpeed * 10),
+                (int)(ChromaManager.RainbowSpeed * 10),
                 Main.SetRainbowSpeed,
                 () => new IntRange(0, 101),
                 v => v.ToString()
@@ -47,7 +47,7 @@ namespace SpeenChroma2
                 if (noteType == ChromaNoteType.All)
                     continue;
 
-                var noteIsAffected = ChromaPatches.AffectedNotes.Contains(noteType.ToNoteColorType());
+                var noteIsAffected = ChromaManager.AffectedNotes.Contains(noteType.ToNoteColorType());
 
                 CreateMultiChoiceButton(
                     _chromaSection.transform,

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx;
@@ -33,21 +32,22 @@ namespace SpeenChroma2
                 "Enable",
                 true,
                 "If set to false, no color-changing effects will occur.");
-            ChromaPatches.EnableChroma = _enableChromaEntry.Value;
+            ChromaManager.EnableChroma = _enableChromaEntry.Value;
 
             _affectedNotesEntry = _config.Bind("Chroma",
                 "AffectedNotes",
                 ChromaNoteType.All,
                 "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
-            ChromaPatches.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
+            ChromaManager.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
 
             _rainbowSpeed = _config.Bind("Chroma.Rainbow",
                 "Speed",
                 1f,
                 new ConfigDescription("Chroma rainbow speed.", new AcceptableValueRange<float>(0f, 10f)));
-            ChromaPatches.ChromaSpeed = _rainbowSpeed.Value;
+            ChromaManager.RainbowSpeed = _rainbowSpeed.Value;
             
-            ChromaPatches.GentlyStealIMeanBorrowDefaultColorValues();
+            ChromaManager.GetDefaultColors();
+            ChromaTriggers.Setup();
             
             Harmony harmony = new Harmony(Guid);
             harmony.PatchAll(typeof(ChromaPatches));
@@ -76,10 +76,10 @@ namespace SpeenChroma2
 
         internal static void SetChromaEnabled(bool enabled)
         {
-            ChromaPatches.EnableChroma = enabled;
+            ChromaManager.EnableChroma = enabled;
             _enableChromaEntry.Value = enabled;
             if (!enabled)
-                ChromaPatches.ResetColorBlenders();
+                ChromaManager.ResetColorBlenders();
         }
 
         internal static void SetNoteTypeEnabled(ChromaNoteType noteType, bool enabled)
@@ -93,14 +93,14 @@ namespace SpeenChroma2
                 _affectedNotesEntry.Value &= ~noteType;
             }
 
-            ChromaPatches.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
-            ChromaPatches.ResetColorBlenders();
+            ChromaManager.AffectedNotes = ParseAffectedNotes(_affectedNotesEntry.Value);
+            ChromaManager.ResetColorBlenders();
         }
 
         internal static void SetRainbowSpeed(int speed)
         {
             _rainbowSpeed.Value = speed / 10f;
-            ChromaPatches.ChromaSpeed = speed / 10f;
+            ChromaManager.RainbowSpeed = speed / 10f;
         }
 
         internal static void Log(object msg) => _logger.LogMessage(msg);
