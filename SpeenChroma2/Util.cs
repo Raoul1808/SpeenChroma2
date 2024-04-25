@@ -29,6 +29,32 @@ namespace SpeenChroma2
             }
         }
 
+        public static NoteColorType GetNoteTypeForString(string noteType)
+        {
+            switch (noteType.ToLower())
+            {
+                case "notea":
+                    return NoteColorType.NoteA;
+                case "noteb":
+                    return NoteColorType.NoteB;
+                case "beat":
+                    return NoteColorType.Beat;
+                case "spinleft":
+                case "leftspin":
+                    return NoteColorType.SpinLeft;
+                case "spinright":
+                case "rightspin":
+                    return NoteColorType.SpinRight;
+                case "scratch":
+                    return NoteColorType.Scratch;
+                case "ancillary":
+                case "highlights":
+                    return NoteColorType.Ancillary;
+                default:
+                    throw new Exception("No note type available for string '" + noteType + "'");
+            }
+        }
+
         public static NoteColorType ToNoteColorType(this ChromaNoteType noteType)
         {
             switch (noteType)

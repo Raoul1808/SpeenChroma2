@@ -15,6 +15,12 @@ namespace SpeenChroma2
         {
             _defaultColors = ColorValueWrapper.colorDefaults;
         }
+
+        public static HslColor GetDefaultColorForNoteType(NoteColorType colorType)
+        {
+            var col = _defaultColors[colorType];
+            return new HslColor(col.Hue, col.Saturation, col.Lightness);
+        }
         
         public static void ResetColorBlenders()
         {
