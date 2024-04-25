@@ -40,6 +40,7 @@ namespace SpeenChroma2
 
         public static void SetColorForNoteType(NoteColorType colorType, HslColor color)
         {
+            color.WrapAndClamp();
             _colorBlenders[colorType].Hue = color.Hue;
             _colorBlenders[colorType].Saturation = color.Saturation;
             _colorBlenders[colorType].Lightness = color.Lightness;

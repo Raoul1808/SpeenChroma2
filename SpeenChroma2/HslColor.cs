@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace SpeenChroma2
 {
     public struct HslColor
@@ -18,6 +20,22 @@ namespace SpeenChroma2
                 Saturation = col1.Saturation + t * (col2.Saturation - col1.Saturation),
                 Lightness = col1.Lightness + t * (col2.Lightness - col1.Lightness),
             };
+        }
+
+        public void WrapAndClamp()
+        {
+            while (Hue >= 1f)
+            {
+                Hue -= 1f;
+            }
+
+            while (Hue < 0f)
+            {
+                Hue += 1f;
+            }
+
+            Saturation = Mathf.Clamp01(Saturation);
+            Lightness = Mathf.Clamp01(Lightness);
         }
     }
 }
