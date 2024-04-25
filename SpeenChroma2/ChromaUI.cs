@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using XDMenuPlay;
 using XDMenuPlay.Customise;
@@ -15,6 +16,7 @@ namespace SpeenChroma2
         private static GameObject _chromaSection;
 
         private static GameObject _multiChoiceBase;
+        private static GameObject _buttonBase;
         
         public static void Initialize(XDCustomiseMenu instance)
         {
@@ -62,36 +64,76 @@ namespace SpeenChroma2
             }
         }
 
-        public static void AddCopyButton(XDColorPickerPopout instance)
+        public static void AddCopyButtons(XDColorPickerPopout instance)
         {
             var popout = instance.gameObject.transform;
             if (popout.Find("CopyHexButton") != null)
                 return;
-            var resetButton = popout.Find("ResetButton");
-            var copyHexButton = Object.Instantiate(resetButton, popout);
-            copyHexButton.name = "CopyHexButton";
-            copyHexButton.transform.name = "CopyHexButton";
-            var text = copyHexButton.transform.Find("OptionLabel").GetComponent<TranslatedTextMeshPro>();
-            text.text.text = "Copy Hex Code";
-            Object.Destroy(copyHexButton.transform.Find("ValueContainer/Visuals/Icon").gameObject);
+            var copyHexButton = CreateButtonWithClipboardIcon(
+                popout,
+                "CopyHexButton",
+                "Copy Hex Code",
+                () =>
+                {
+                    var col = new HslColor(instance.currentWrapper.Hue, instance.currentWrapper.Saturation, instance.currentWrapper.Lightness);
+                    string hex = "#" + col.ToHexRgb();
+                    GUIUtility.systemCopyBuffer = hex;
+                    NotificationSystemGUI.AddMessage($"Copied hex color {hex} to clipboard");
+                }
+            );
+            var importHexButton = CreateButtonWithClipboardIcon(
+                popout,
+                "ImportHexButton",
+                "Import Clipboard",
+                () =>
+                {
+                    HslColor col;
+                    try
+                    {
+                        col = HslColor.FromHexRgb(GUIUtility.systemCopyBuffer);
+                    }
+                    catch
+                    {
+                        NotificationSystemGUI.AddMessage("Invalid hex code");
+                        return;
+                    }
+
+                    instance.currentWrapper.Hue = col.Hue;
+                    instance.currentWrapper.Saturation = col.Saturation;
+                    instance.currentWrapper.Lightness = col.Lightness;
+                    instance.hue.normalizedValue = col.Hue;
+                    instance.saturation.TargetIndex = (int)Math.Round(col.Saturation * 100f);
+                    instance.lightness.TargetIndex = (int)Math.Round(col.Lightness * 100f);
+                }
+            );
+        }
+
+        private static GameObject CreateButtonWithClipboardIcon(
+            Transform parent, 
+            string name,
+            string label, 
+            UnityAction buttonAction)
+        {
+            if (_buttonBase == null)
+            {
+                _buttonBase = XDCustomiseMenu.Instance.transform.Find("MenuContainer/PopoutControlContainer/ColorPickerPopout(Clone)/ResetButton").gameObject;
+            }
+            var button = Object.Instantiate(_buttonBase, parent);
+            button.name = name;
+            button.transform.name = name;
+            var text = button.transform.Find("OptionLabel").GetComponent<TranslatedTextMeshPro>();
+            text.text.text = label;
+            Object.Destroy(button.transform.Find("ValueContainer/Visuals/Icon").gameObject);
             var icon = Object.Instantiate(
-                BuildSettingsAsset.Instance.popoutButtonPrefab.transform.Find("ValueContainer/Visuals/Icon").gameObject,
-                copyHexButton.transform.Find("ValueContainer/Visuals"));
+                BuildSettingsAsset.Instance.popoutButtonPrefab.transform.Find("ValueContainer/Visuals/Icon")
+                    .gameObject,
+                button.transform.Find("ValueContainer/Visuals"));
             icon.name = "Icon";
             icon.transform.name = "Icon";
-            var button = copyHexButton.GetComponent<XDNavigableButton>();
-            button.onClick = new Button.ButtonClickedEvent();
-            button.onClick.AddListener(() =>
-            {
-                Main.Log(instance.currentWrapper.Hue + " " + instance.currentWrapper.Saturation + " " + instance.currentWrapper.Lightness);
-                var col = new HslColor(instance.currentWrapper.Hue, instance.currentWrapper.Saturation, instance.currentWrapper.Lightness);
-                Main.Log(col);
-                col.WrapAndClamp();
-                Main.Log(col);
-                string hex = "#" + col.ToHexRgb();
-                GUIUtility.systemCopyBuffer = hex;
-                NotificationSystemGUI.AddMessage($"Copied hex color {hex} to clipboard");
-            });
+            var xdButton = button.GetComponent<XDNavigableButton>();
+            xdButton.onClick = new Button.ButtonClickedEvent();
+            xdButton.onClick.AddListener(buttonAction);
+            return button;
         }
 
         private static void CreateChromaSection(XDCustomiseMenu instance)

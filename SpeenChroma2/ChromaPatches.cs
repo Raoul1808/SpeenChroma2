@@ -47,7 +47,7 @@ namespace SpeenChroma2
         [HarmonyPostfix]
         private static void InsertCopyColorButton(XDColorPickerPopout __instance)
         {
-            ChromaUI.AddCopyButton(__instance);
+            ChromaUI.AddCopyButtons(__instance);
         }
 
         [HarmonyPatch(typeof(Track), nameof(Track.Update))]
