@@ -50,6 +50,14 @@ namespace SpeenChroma2
             ChromaUI.AddCopyButtons(__instance);
         }
 
+        [HarmonyPatch(typeof(Track), nameof(Track.ReturnToPickTrack))]
+        [HarmonyPostfix]
+        private static void ClearEffects()
+        {
+            ChromaTriggers.ClearAll();
+            ChromaManager.ResetColorBlenders();
+        }
+
         [HarmonyPatch(typeof(Track), nameof(Track.Update))]
         [HarmonyPostfix]
         private static void Track_Update_Postfix()

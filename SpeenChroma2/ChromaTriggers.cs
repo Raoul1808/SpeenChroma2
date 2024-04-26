@@ -34,6 +34,16 @@ namespace SpeenChroma2
                 }
             }
         }
+        
+        private static readonly (string, NoteColorType)[] KeyPairs = {
+            ("ChromaNoteA", NoteColorType.NoteA),
+            ("ChromaNoteB", NoteColorType.NoteB),
+            ("ChromaBeat", NoteColorType.Beat),
+            ("ChromaSpinLeft", NoteColorType.SpinLeft),
+            ("ChromaSpinRight", NoteColorType.SpinRight),
+            ("ChromaScratch", NoteColorType.Scratch),
+            ("ChromaAncillary", NoteColorType.Ancillary),
+        };
 
         public static void Setup()
         {
@@ -41,19 +51,17 @@ namespace SpeenChroma2
             TriggerManager.OnChartLoad += OnChartLoad;
         }
 
+        public static void ClearAll()
+        {
+            foreach (var pair in KeyPairs)
+            {
+                TriggerManager.ClearTriggers(pair.Item1);
+            }
+        }
+
         private static void RegisterEvents()
         {
-            (string, NoteColorType)[] pairs = {
-                ("ChromaNoteA", NoteColorType.NoteA),
-                ("ChromaNoteB", NoteColorType.NoteB),
-                ("ChromaBeat", NoteColorType.Beat),
-                ("ChromaSpinLeft", NoteColorType.SpinLeft),
-                ("ChromaSpinRight", NoteColorType.SpinRight),
-                ("ChromaScratch", NoteColorType.Scratch),
-                ("ChromaAncillary", NoteColorType.Ancillary),
-            };
-
-            foreach (var pair in pairs)
+            foreach (var pair in KeyPairs)
             {
                 TriggerManager.RegisterTriggerEvent(pair.Item1, (trigger, time) =>
                 {
@@ -91,19 +99,9 @@ namespace SpeenChroma2
 
             if (triggers == null || triggers.Count == 0)
                 return;
-            
-            (string, NoteColorType)[] pairs = {
-                ("ChromaNoteA", NoteColorType.NoteA),
-                ("ChromaNoteB", NoteColorType.NoteB),
-                ("ChromaBeat", NoteColorType.Beat),
-                ("ChromaSpinLeft", NoteColorType.SpinLeft),
-                ("ChromaSpinRight", NoteColorType.SpinRight),
-                ("ChromaScratch", NoteColorType.Scratch),
-                ("ChromaAncillary", NoteColorType.Ancillary),
-            };
 
             int totalCount = 0;
-            foreach (var pair in pairs)
+            foreach (var pair in KeyPairs)
             {
                 TriggerManager.ClearTriggers(pair.Item1);
                 if (triggers.TryGetValue(pair.Item2, out var list))
@@ -202,20 +200,10 @@ namespace SpeenChroma2
 
             if (dict.Count == 0)
                 return dict;
-            
-            (string, NoteColorType)[] pairs = {
-                ("ChromaNoteA", NoteColorType.NoteA),
-                ("ChromaNoteB", NoteColorType.NoteB),
-                ("ChromaBeat", NoteColorType.Beat),
-                ("ChromaSpinLeft", NoteColorType.SpinLeft),
-                ("ChromaSpinRight", NoteColorType.SpinRight),
-                ("ChromaScratch", NoteColorType.Scratch),
-                ("ChromaAncillary", NoteColorType.Ancillary),
-            };
 
             // Force adding default values to prevent rainbow effect from happening
             // TODO: FIND CLEANER WAY TO DISABLE RAINBOW WHEN TRIGGERS ARE ACTIVE
-            foreach (var p in pairs)
+            foreach (var p in KeyPairs)
             {
                 if (!dict.TryGetValue(p.Item2, out var list))
                 {
