@@ -8,6 +8,8 @@ namespace SpeenChroma2
 {
     public static class ChromaPatches
     {
+        private static bool _currentlyIngame;
+        
         [HarmonyPatch(
             typeof(ColorValueWrapper),
             MethodType.Constructor,
@@ -50,10 +52,26 @@ namespace SpeenChroma2
             ChromaUI.AddCopyButtons(__instance);
         }
 
-        [HarmonyPatch(typeof(Track), nameof(Track.ReturnToPickTrack))]
+        [HarmonyPatch(typeof(Track), nameof(Track.PlayTrack))]
+        [HarmonyPostfix]
+        private static void UpdateStateWhenGaming()
+        {
+            _currentlyIngame = true;
+        }
+        
+        [HarmonyPatch(typeof(Track), nameof(Track.StopTrack))]
+        [HarmonyPrefix]
+        private static void LeaveGame()
+        {
+            _currentlyIngame = false;
+        }
+
+        [HarmonyPatch(typeof(XDSelectionListMenu), nameof(XDSelectionListMenu.BackButtonPressed))]
+        [HarmonyPatch(typeof(Track), nameof(Track.StopTrack))]
         [HarmonyPostfix]
         private static void ClearEffects()
         {
+            if (_currentlyIngame) return;
             ChromaTriggers.ClearAll();
             ChromaManager.ResetColorBlenders();
         }
