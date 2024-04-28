@@ -9,6 +9,7 @@ namespace SpeenChroma2
     public static class ChromaPatches
     {
         private static bool _currentlyIngame;
+        private static bool _restarting;
         
         [HarmonyPatch(
             typeof(ColorValueWrapper),
@@ -57,6 +58,15 @@ namespace SpeenChroma2
         private static void UpdateStateWhenGaming()
         {
             _currentlyIngame = true;
+            if (_restarting)
+                _restarting = false;
+        }
+
+        [HarmonyPatch(typeof(Track), nameof(Track.RestartTrack))]
+        [HarmonyPostfix]
+        private static void PreventRestartBug()
+        {
+            _restarting = true;
         }
         
         [HarmonyPatch(typeof(Track), nameof(Track.StopTrack))]
@@ -71,7 +81,7 @@ namespace SpeenChroma2
         [HarmonyPostfix]
         private static void ClearEffects()
         {
-            if (_currentlyIngame) return;
+            if (_currentlyIngame || _restarting) return;
             ChromaTriggers.ClearAll();
             ChromaManager.ResetColorBlenders();
         }
