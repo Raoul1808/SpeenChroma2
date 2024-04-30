@@ -20,6 +20,7 @@ namespace SpeenChroma2
         private static ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "SpeenChroma2.cfg"), true);
 
         private static ConfigEntry<bool> _enableChromaEntry;
+        private static ConfigEntry<bool> _enableChromaTriggersEntry;
         private static ConfigEntry<bool> _enableRainbowEntry;
         private static ConfigEntry<ChromaNoteType> _affectedNotesRainbowEntry;
         private static ConfigEntry<float> _rainbowSpeed;
@@ -35,6 +36,12 @@ namespace SpeenChroma2
                 true,
                 "If set to false, no color-changing effects will occur.");
             ChromaManager.EnableChroma = _enableChromaEntry.Value;
+
+            _enableChromaTriggersEntry = _config.Bind("Chroma",
+                "EnableTriggers",
+                true,
+                "If set to false, no chart-specific color-changing effects will occur.");
+            ChromaManager.EnableTriggers = _enableChromaTriggersEntry.Value;
             
             _enableRainbowEntry = _config.Bind("Chroma.Rainbow",
                 "Enable",
@@ -86,6 +93,14 @@ namespace SpeenChroma2
         {
             ChromaManager.EnableChroma = enabled;
             _enableChromaEntry.Value = enabled;
+            if (!enabled)
+                ChromaManager.ResetColorBlenders();
+        }
+
+        internal static void SetChromaTriggersEnabled(bool enabled)
+        {
+            ChromaManager.EnableTriggers = enabled;
+            _enableChromaTriggersEntry.Value = enabled;
             if (!enabled)
                 ChromaManager.ResetColorBlenders();
         }

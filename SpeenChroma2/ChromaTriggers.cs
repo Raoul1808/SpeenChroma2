@@ -65,6 +65,7 @@ namespace SpeenChroma2
             {
                 TriggerManager.RegisterTriggerEvent(pair.Item1, (trigger, time) =>
                 {
+                    if (!ChromaManager.EnableTriggers) return;
                     var chromaTrigger = (ChromaTrigger)trigger;
                     if (chromaTrigger.Duration == 0f)
                     {
@@ -80,6 +81,7 @@ namespace SpeenChroma2
 
         private static void OnChartLoad(TrackData trackData)
         {
+            if (!ChromaManager.EnableTriggers) return;
             string path = trackData.CustomFile?.FilePath;
             if (string.IsNullOrEmpty(path))
                 return;

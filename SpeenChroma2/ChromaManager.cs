@@ -5,6 +5,7 @@ namespace SpeenChroma2
     public static class ChromaManager
     {
         public static bool EnableChroma { get; set; }
+        public static bool EnableTriggers { get; set; }
         public static NoteColorType[] AffectedNotesRainbow { get; set; }
         public static bool EnableRainbow { get; set; }
         public static float RainbowSpeed { get; set; }

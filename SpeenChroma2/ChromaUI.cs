@@ -36,6 +36,16 @@ namespace SpeenChroma2
 
             CreateMultiChoiceButton(
                 _chromaSection.transform,
+                "EnableTriggers",
+                "Enable Chroma Triggers",
+                ChromaManager.EnableTriggers ? 1 : 0,
+                v => Main.SetChromaTriggersEnabled(v == 1),
+                () => new IntRange(0, 2),
+                v => v == 0 ? "UI_No" : "UI_Yes"
+            );
+
+            CreateMultiChoiceButton(
+                _chromaSection.transform,
                 "EnableRainbow",
                 "Enable Rainbow Effect",
                 ChromaManager.EnableRainbow ? 1 : 0,
