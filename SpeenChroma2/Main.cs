@@ -20,12 +20,13 @@ namespace SpeenChroma2
         private static ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "SpeenChroma2.cfg"), true);
 
         private static ConfigEntry<bool> _enableChromaEntry;
+        private static ConfigEntry<bool> _enableRainbowEntry;
         private static ConfigEntry<ChromaNoteType> _affectedNotesRainbowEntry;
         private static ConfigEntry<float> _rainbowSpeed;
-        private static ConfigEntry<bool> _enableRainbowEntry;
         
         private void Awake()
         {
+            _config.SaveOnConfigSet = true;
             _logger = Logger;
             Logger.LogMessage("Hi from Speen Chroma 2!");
 
@@ -34,18 +35,18 @@ namespace SpeenChroma2
                 true,
                 "If set to false, no color-changing effects will occur.");
             ChromaManager.EnableChroma = _enableChromaEntry.Value;
+            
+            _enableRainbowEntry = _config.Bind("Chroma.Rainbow",
+                "Enable",
+                true,
+                "If set to false, no rainbow effects will occur.");
+            ChromaManager.EnableRainbow = _enableRainbowEntry.Value;
 
             _affectedNotesRainbowEntry = _config.Bind("Chroma.Rainbow",
                 "AffectedNotes",
                 ChromaNoteType.All,
                 "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
             ChromaManager.AffectedNotesRainbow = ParseAffectedNotes(_affectedNotesRainbowEntry.Value);
-
-            _enableRainbowEntry = _config.Bind("Chroma.Rainbow",
-                "Enable",
-                true,
-                "If set to false, no rainbow effects will occur.");
-            ChromaManager.EnableRainbow = true;
             
             _rainbowSpeed = _config.Bind("Chroma.Rainbow",
                 "Speed",
