@@ -115,6 +115,28 @@ namespace SpeenChroma2
             Main.Log("Applied " + totalCount + " triggers from file " + filename + ".chroma");
         }
 
+        private static HslColor GetColor(string color)
+        {
+            if (color.StartsWith("default"))
+            {
+                string noteColor = color.Substring(7);
+                var noteType = Util.GetNoteTypeForString(noteColor);
+                return ChromaManager.GetDefaultColorForNoteType(noteType);
+            }
+
+            return HslColor.FromHexRgb(color);
+        }
+        
+        private static HslColor GetColor(string color, NoteColorType noteType)
+        {
+            if (color == "default")
+            {
+                return ChromaManager.GetDefaultColorForNoteType(noteType);
+            }
+
+            return GetColor(color);
+        }
+
         private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggers(string path)
         {
             var dict = new Dictionary<NoteColorType, List<ChromaTrigger>>();
@@ -136,9 +158,7 @@ namespace SpeenChroma2
                     trigger.Duration = 0f;
                     noteType = Util.GetNoteTypeForString(elems[1]);
                     string colStr = elems[2];
-                    var col = colStr == "default"
-                        ? ChromaManager.GetDefaultColorForNoteType(noteType)
-                        : HslColor.FromHexRgb(colStr);
+                    var col = GetColor(colStr, noteType);
                     trigger.StartColor = col;
                     trigger.EndColor = col;
                     if (!dict.TryGetValue(noteType, out var list))
@@ -159,9 +179,7 @@ namespace SpeenChroma2
                     noteType = Util.GetNoteTypeForString(elems[1]);
                     float time = float.Parse(elems[2]);
                     string colStr = elems[3];
-                    var col = colStr == "default"
-                        ? ChromaManager.GetDefaultColorForNoteType(noteType)
-                        : HslColor.FromHexRgb(colStr);
+                    var col = GetColor(colStr, noteType);
                     trigger.Time = time;
                     trigger.Duration = 0f;
                     trigger.StartColor = col;
@@ -176,28 +194,117 @@ namespace SpeenChroma2
                     continue;
                 }
 
-                // Second line check
                 if (elems.Length < 5)
                     continue;
+
+                if (elems[0] == "swap")
+                {
+                    if (elems[1] == "instant")
+                    {
+                        float time = float.Parse(elems[2]);
+                        var note1 = Util.GetNoteTypeForString(elems[3]);
+                        var note2 = Util.GetNoteTypeForString(elems[4]);
+                        
+                        if (!dict.TryGetValue(note1, out var list1))
+                        {
+                            list1 = new List<ChromaTrigger>();
+                            dict.Add(note1, list1);
+                        }
+
+                        if (!dict.TryGetValue(note2, out var list2))
+                        {
+                            list2 = new List<ChromaTrigger>();
+                            dict.Add(note2, list2);
+                        }
+                        
+                        var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
+                        var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
+
+                        var trigger1 = new ChromaTrigger
+                        {
+                            Time = time,
+                            Duration = 0f,
+                            StartColor = noteCol2,
+                            EndColor = noteCol2,
+                        };
+                        var trigger2 = new ChromaTrigger
+                        {
+                            Time = time,
+                            Duration = 0f,
+                            StartColor = noteCol1,
+                            EndColor = noteCol1,
+                        };
+                        
+                        list1.Add(trigger1);
+                        list2.Add(trigger2);
+                        continue;
+                    }
+
+                    if (elems.Length < 7)
+                        continue;
+
+                    if (elems[1] == "flash")
+                    {
+                        float time = float.Parse(elems[2]);
+                        float end = float.Parse(elems[3]);
+                        var note1 = Util.GetNoteTypeForString(elems[4]);
+                        var note2 = Util.GetNoteTypeForString(elems[5]);
+                        var flashColor = GetColor(elems[6].ToLower());
+                        
+                        if (!dict.TryGetValue(note1, out var list1))
+                        {
+                            list1 = new List<ChromaTrigger>();
+                            dict.Add(note1, list1);
+                        }
+
+                        if (!dict.TryGetValue(note2, out var list2))
+                        {
+                            list2 = new List<ChromaTrigger>();
+                            dict.Add(note2, list2);
+                        }
+                        
+                        var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
+                        var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
+
+                        var trigger1 = new ChromaTrigger
+                        {
+                            Time = time,
+                            Duration = end - time,
+                            StartColor = flashColor,
+                            EndColor = noteCol2,
+                        };
+                        var trigger2 = new ChromaTrigger
+                        {
+                            Time = time,
+                            Duration = end - time,
+                            StartColor = flashColor,
+                            EndColor = noteCol1,
+                        };
+                        
+                        list1.Add(trigger1);
+                        list2.Add(trigger2);
+                        continue;
+                    }
+                }
 
                 noteType = Util.GetNoteTypeForString(elems[0]);
                 float startTime = float.Parse(elems[1]);
                 float endTime = float.Parse(elems[2]);
-                string startCol = elems[3];
-                string endCol = elems[4];
+                string startCol = elems[3].ToLower();
+                string endCol = elems[4].ToLower();
 
                 trigger.Time = startTime;
                 trigger.Duration = endTime - startTime;
-                trigger.StartColor = startCol.ToLower() == "default" ? ChromaManager.GetDefaultColorForNoteType(noteType) : HslColor.FromHexRgb(startCol);
-                trigger.EndColor = endCol.ToLower() == "default" ? ChromaManager.GetDefaultColorForNoteType(noteType) : HslColor.FromHexRgb(endCol);
+                trigger.StartColor = GetColor(startCol, noteType);
+                trigger.EndColor = GetColor(endCol, noteType);
                 trigger.EnsureSmoothTransition();
-                if (!dict.TryGetValue(noteType, out var list2))
+                if (!dict.TryGetValue(noteType, out var list0))
                 {
-                    list2 = new List<ChromaTrigger>();
-                    dict.Add(noteType, list2);
+                    list0 = new List<ChromaTrigger>();
+                    dict.Add(noteType, list0);
                 }
 
-                list2.Add(trigger);
+                list0.Add(trigger);
             }
 
             if (dict.Count == 0)
