@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -82,6 +81,7 @@ namespace SpeenChroma2
         private static void OnChartLoad(TrackData trackData)
         {
             if (!ChromaManager.EnableTriggers) return;
+            bool loadedFromFile = true;
             string path = trackData.CustomFile?.FilePath;
             if (string.IsNullOrEmpty(path))
                 return;
@@ -95,24 +95,43 @@ namespace SpeenChroma2
 
             Dictionary<NoteColorType, List<ChromaTrigger>> triggers = null;
             if (File.Exists(diffChromaPath))
-                triggers = LoadTriggers(diffChromaPath);
+                triggers = LoadTriggersFromChromaFile(diffChromaPath);
             else if (File.Exists(chromaPath))
-                triggers = LoadTriggers(chromaPath);
+                triggers = LoadTriggersFromChromaFile(chromaPath);
+            else
+            {
+                triggers = LoadTriggersFromEmbeddedData(trackData);
+                loadedFromFile = false;
+            }
 
             if (triggers == null || triggers.Count == 0)
                 return;
-
+            
             int totalCount = 0;
             foreach (var pair in KeyPairs)
             {
                 TriggerManager.ClearTriggers(pair.Item1);
-                if (triggers.TryGetValue(pair.Item2, out var list))
+                if (!triggers.TryGetValue(pair.Item2, out var list))
                 {
-                    TriggerManager.LoadTriggers(list.ToArray<ITrigger>(), pair.Item1);
-                    totalCount += list.Count;
+                    list = new List<ChromaTrigger>();
+                    triggers.Add(pair.Item2, list);
                 }
+
+                // Force adding default values to prevent rainbow effect from happening
+                // TODO: FIND CLEANER WAY TO DISABLE RAINBOW WHEN TRIGGERS ARE ACTIVE
+                list.Add(new ChromaTrigger
+                {
+                    Time = -10f,
+                    Duration = 0f,
+                    StartColor = ChromaManager.GetDefaultColorForNoteType(pair.Item2),
+                    EndColor = ChromaManager.GetDefaultColorForNoteType(pair.Item2),
+                });
+                TriggerManager.LoadTriggers(list.ToArray<ITrigger>(), pair.Item1); 
+                totalCount += list.Count;
             }
-            Main.Log("Applied " + totalCount + " triggers from file " + filename + ".chroma");
+
+            string log = loadedFromFile ? "file " + filename + ".chroma" : "embedded data";
+            Main.Log("Applied " + totalCount + " triggers from " + log);
         }
 
         private static HslColor GetColor(string color)
@@ -137,7 +156,21 @@ namespace SpeenChroma2
             return GetColor(color);
         }
 
-        private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggers(string path)
+        private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromEmbeddedData(TrackData trackData)
+        {
+            string diffStr = trackData.difficultyType.ToString().ToUpper();
+            if (CustomChartHelper.TryGetCustomData(trackData.CustomFile, "SpeenChroma_ChromaTriggers_" + diffStr, out Dictionary<NoteColorType, List<ChromaTrigger>> diffTriggers))
+            {
+                return diffTriggers;
+            }
+            if (CustomChartHelper.TryGetCustomData(trackData.CustomFile, "SpeenChroma_ChromaTriggers", out Dictionary<NoteColorType, List<ChromaTrigger>> allTriggers))
+            {
+                return allTriggers;
+            }
+            return null;
+        }
+
+        private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromChromaFile(string path)
         {
             var dict = new Dictionary<NoteColorType, List<ChromaTrigger>>();
             foreach (string line in File.ReadAllLines(path))
@@ -309,24 +342,6 @@ namespace SpeenChroma2
 
             if (dict.Count == 0)
                 return dict;
-
-            // Force adding default values to prevent rainbow effect from happening
-            // TODO: FIND CLEANER WAY TO DISABLE RAINBOW WHEN TRIGGERS ARE ACTIVE
-            foreach (var p in KeyPairs)
-            {
-                if (!dict.TryGetValue(p.Item2, out var list))
-                {
-                    list = new List<ChromaTrigger>();
-                    dict.Add(p.Item2, list);
-                }
-                list.Add(new ChromaTrigger
-                {
-                    Time = -10f,
-                    Duration = 0f,
-                    StartColor = ChromaManager.GetDefaultColorForNoteType(p.Item2),
-                    EndColor = ChromaManager.GetDefaultColorForNoteType(p.Item2),
-                });
-            }
 
             foreach (var pair in dict)
             {
