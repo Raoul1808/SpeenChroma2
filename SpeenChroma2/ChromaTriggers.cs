@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,8 @@ namespace SpeenChroma2
             ("ChromaScratch", NoteColorType.Scratch),
             ("ChromaAncillary", NoteColorType.Ancillary),
         };
+
+        private static readonly Dictionary<NoteColorType, HslColor> DefinedColors = new Dictionary<NoteColorType, HslColor>();
 
         public static void Setup()
         {
@@ -140,7 +143,9 @@ namespace SpeenChroma2
             {
                 string noteColor = color.Substring(7);
                 var noteType = Util.GetNoteTypeForString(noteColor);
-                return ChromaManager.GetDefaultColorForNoteType(noteType);
+                if (!DefinedColors.TryGetValue(noteType, out var col))
+                    throw new Exception("Color isn't defined!");
+                return col;
             }
 
             return HslColor.FromHexRgb(color);
@@ -150,7 +155,9 @@ namespace SpeenChroma2
         {
             if (color == "default")
             {
-                return ChromaManager.GetDefaultColorForNoteType(noteType);
+                if (!DefinedColors.TryGetValue(noteType, out var col))
+                    throw new Exception("Color isn't defined!");
+                return col;
             }
 
             return GetColor(color);
@@ -172,6 +179,7 @@ namespace SpeenChroma2
 
         private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromChromaFile(string path)
         {
+            DefinedColors.Clear();
             var dict = new Dictionary<NoteColorType, List<ChromaTrigger>>();
             foreach (string line in File.ReadAllLines(path))
             {
@@ -190,8 +198,10 @@ namespace SpeenChroma2
                     trigger.Time = 0f;
                     trigger.Duration = 0f;
                     noteType = Util.GetNoteTypeForString(elems[1]);
+                    if (DefinedColors.ContainsKey(noteType))
+                        throw new Exception("Color already defined!");
                     string colStr = elems[2];
-                    var col = GetColor(colStr, noteType);
+                    var col = HslColor.FromHexRgb(colStr);
                     trigger.StartColor = col;
                     trigger.EndColor = col;
                     if (!dict.TryGetValue(noteType, out var list))
@@ -201,6 +211,7 @@ namespace SpeenChroma2
                     }
 
                     list.Add(trigger);
+                    DefinedColors.Add(noteType, col);
                     continue;
                 }
 
