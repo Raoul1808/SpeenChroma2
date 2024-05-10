@@ -6,15 +6,15 @@ namespace SpeenChroma2
 {
     public struct HslColor
     {
-        public float Hue;
-        public float Saturation;
-        public float Lightness;
+        public float H;
+        public float S;
+        public float L;
 
         public HslColor(float h, float s, float l)
         {
-            Hue = h;
-            Saturation = s;
-            Lightness = l;
+            H = h;
+            S = s;
+            L = l;
         }
 
         public static HslColor Lerp(HslColor col1, HslColor col2, float t)
@@ -25,35 +25,35 @@ namespace SpeenChroma2
                 return col2;
             return new HslColor
             {
-                Hue = col1.Hue + t * (col2.Hue - col1.Hue),
-                Saturation = col1.Saturation + t * (col2.Saturation - col1.Saturation),
-                Lightness = col1.Lightness + t * (col2.Lightness - col1.Lightness),
+                H = col1.H + t * (col2.H - col1.H),
+                S = col1.S + t * (col2.S - col1.S),
+                L = col1.L + t * (col2.L - col1.L),
             };
         }
 
         public void WrapAndClamp()
         {
-            while (Hue >= 1f)
+            while (H >= 1f)
             {
-                Hue -= 1f;
+                H -= 1f;
             }
 
-            while (Hue < 0f)
+            while (H < 0f)
             {
-                Hue += 1f;
+                H += 1f;
             }
 
-            Saturation = Mathf.Clamp01(Saturation);
-            Lightness = Mathf.Clamp01(Lightness);
+            S = Mathf.Clamp01(S);
+            L = Mathf.Clamp01(L);
         }
 
         public string ToHexRgb()
         {
             WrapAndClamp();
-            double hue = Hue * 360.0;
-            double chroma = (1 - Math.Abs(2 * Lightness - 1)) * Saturation;
+            double hue = H * 360.0;
+            double chroma = (1 - Math.Abs(2 * L - 1)) * S;
             double x = chroma * (1 - Math.Abs((hue / 60.0) % 2 - 1));
-            double m = Lightness - chroma / 2.0;
+            double m = L - chroma / 2.0;
             double r1 = 0, g1 = 0, b1 = 0;
             if (0 <= hue && hue < 60)
             {
@@ -142,7 +142,7 @@ namespace SpeenChroma2
 
         public override string ToString()
         {
-            return $"{{H: {Hue}, S: {Saturation}, L: {Lightness}}}";
+            return $"{{H: {H}, S: {S}, L: {L}}}";
         }
     }
 }

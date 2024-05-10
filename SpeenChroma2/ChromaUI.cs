@@ -118,12 +118,12 @@ namespace SpeenChroma2
                         return;
                     }
 
-                    instance.currentWrapper.Hue = col.Hue;
-                    instance.currentWrapper.Saturation = col.Saturation;
-                    instance.currentWrapper.Lightness = col.Lightness;
-                    instance.hue.normalizedValue = col.Hue;
-                    instance.saturation.TargetIndex = (int)Math.Round(col.Saturation * 100f);
-                    instance.lightness.TargetIndex = (int)Math.Round(col.Lightness * 100f);
+                    instance.currentWrapper.Hue = col.H;
+                    instance.currentWrapper.Saturation = col.S;
+                    instance.currentWrapper.Lightness = col.L;
+                    instance.hue.normalizedValue = col.H;
+                    instance.saturation.TargetIndex = (int)Math.Round(col.S * 100f);
+                    instance.lightness.TargetIndex = (int)Math.Round(col.L * 100f);
                 }
             );
         }

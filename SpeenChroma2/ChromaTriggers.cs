@@ -17,19 +17,19 @@ namespace SpeenChroma2
 
             public void EnsureSmoothTransition()
             {
-                if (StartColor.Hue == 0f && EndColor.Hue != 0f &&
-                    (StartColor.Saturation == 0f || StartColor.Lightness == 1f))
+                if (StartColor.H == 0f && EndColor.H != 0f &&
+                    (StartColor.S == 0f || StartColor.L == 1f))
                 {
                     var col = StartColor;
-                    col.Hue = EndColor.Hue;
+                    col.H = EndColor.H;
                     StartColor = col;
                 }
 
-                if (EndColor.Hue == 0f && StartColor.Hue != 0f &&
-                    (EndColor.Saturation == 0f || EndColor.Lightness == 1f))
+                if (EndColor.H == 0f && StartColor.H != 0f &&
+                    (EndColor.S == 0f || EndColor.L == 1f))
                 {
                     var col = EndColor;
-                    col.Hue = StartColor.Hue;
+                    col.H = StartColor.H;
                     EndColor = col;
                 }
             }

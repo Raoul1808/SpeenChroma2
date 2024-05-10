@@ -51,9 +51,9 @@ namespace SpeenChroma2
             if (!EnableChroma)
                 return;
             color.WrapAndClamp();
-            _colorBlenders[colorType].Hue = color.Hue;
-            _colorBlenders[colorType].Saturation = color.Saturation;
-            _colorBlenders[colorType].Lightness = color.Lightness;
+            _colorBlenders[colorType].Hue = color.H;
+            _colorBlenders[colorType].Saturation = color.S;
+            _colorBlenders[colorType].Lightness = color.L;
         }
     }
 }
