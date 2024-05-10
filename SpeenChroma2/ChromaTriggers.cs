@@ -97,14 +97,24 @@ namespace SpeenChroma2
             string diffChromaPath = Path.Combine(directory, filename + "_" + diffStr + ".chroma");
 
             Dictionary<NoteColorType, List<ChromaTrigger>> triggers = null;
-            if (File.Exists(diffChromaPath))
-                triggers = LoadTriggersFromChromaFile(diffChromaPath);
-            else if (File.Exists(chromaPath))
-                triggers = LoadTriggersFromChromaFile(chromaPath);
-            else
+            try
             {
-                triggers = LoadTriggersFromEmbeddedData(trackData);
-                loadedFromFile = false;
+                if (File.Exists(diffChromaPath))
+                    triggers = LoadTriggersFromChromaFile(diffChromaPath);
+                else if (File.Exists(chromaPath))
+                    triggers = LoadTriggersFromChromaFile(chromaPath);
+                else
+                {
+                    triggers = LoadTriggersFromEmbeddedData(trackData);
+                    loadedFromFile = false;
+                }
+
+                if (triggers.Count > 0)
+                    NotificationSystemGUI.AddMessage("Loaded " + triggers.Count + " chroma triggers");
+            }
+            catch (Exception e)
+            {
+                NotificationSystemGUI.AddMessage("ERROR: " + e);
             }
 
             if (triggers == null || triggers.Count == 0)
