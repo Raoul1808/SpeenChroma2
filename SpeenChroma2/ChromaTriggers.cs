@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using SpinTriggerHelper;
+using SpinCore.Triggers;
 
 namespace SpeenChroma2
 {
@@ -50,7 +50,7 @@ namespace SpeenChroma2
         public static void Setup()
         {
             RegisterEvents();
-            TriggerManager.OnChartLoad += OnChartLoad;
+            Track.OnLoadedIntoTrack += OnChartLoad;
         }
 
         public static void ClearAll()
@@ -81,8 +81,10 @@ namespace SpeenChroma2
             }
         }
 
-        private static void OnChartLoad(TrackData trackData)
+        private static void OnChartLoad(PlayableTrackDataHandle playableTrackDataHandle, PlayState[] playStates)
         {
+            if (playableTrackDataHandle.Data.TrackDataList.Count == 0) return;
+            var trackData = playableTrackDataHandle.Data.TrackDataList[0];
             if (!ChromaManager.EnableTriggers) return;
             bool loadedFromFile = true;
             string path = trackData.CustomFile?.FilePath;
@@ -139,7 +141,7 @@ namespace SpeenChroma2
                     StartColor = ChromaManager.GetDefaultColorForNoteType(pair.Item2),
                     EndColor = ChromaManager.GetDefaultColorForNoteType(pair.Item2),
                 });
-                TriggerManager.LoadTriggers(list.ToArray<ITrigger>(), pair.Item1); 
+                TriggerManager.LoadTriggers(pair.Item1, list.ToArray<ITrigger>()); 
                 totalCount += list.Count;
             }
 
