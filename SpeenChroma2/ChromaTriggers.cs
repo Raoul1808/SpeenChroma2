@@ -65,10 +65,9 @@ namespace SpeenChroma2
         {
             foreach (var pair in KeyPairs)
             {
-                TriggerManager.RegisterTriggerEvent(pair.Item1, (trigger, time) =>
+                TriggerManager.RegisterTriggerEvent<ChromaTrigger>(pair.Item1, (chromaTrigger, time) =>
                 {
                     if (!ChromaManager.EnableTriggers) return;
-                    var chromaTrigger = (ChromaTrigger)trigger;
                     if (chromaTrigger.Duration == 0f)
                     {
                         ChromaManager.SetColorForNoteType(pair.Item2, chromaTrigger.EndColor);
@@ -83,9 +82,9 @@ namespace SpeenChroma2
 
         private static void OnChartLoad(PlayableTrackDataHandle playableTrackDataHandle, PlayState[] playStates)
         {
+            if (!ChromaManager.EnableTriggers) return;
             if (playableTrackDataHandle.Data.TrackDataList.Count == 0) return;
             var trackData = playableTrackDataHandle.Data.TrackDataList[0];
-            if (!ChromaManager.EnableTriggers) return;
             bool loadedFromFile = true;
             string path = trackData.CustomFile?.FilePath;
             if (string.IsNullOrEmpty(path))
