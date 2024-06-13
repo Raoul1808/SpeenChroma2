@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using SpinCore.UI;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -11,77 +12,89 @@ namespace SpeenChroma2
 {
     public static class ChromaUI
     {
-        public static bool Initialized { get; private set; }
-
-        private static GameObject _chromaSection;
-
-        private static GameObject _multiChoiceBase;
         private static GameObject _buttonBase;
+
+        private static CustomGroup _rainbowSection;
         
-        public static void Initialize(XDCustomiseMenu instance)
+        public static void Initialize()
         {
-            if (Initialized) return;
-            Initialized = true;
-            CreateChromaSection(instance);
-            
-            CreateMultiChoiceButton(
-                _chromaSection.transform,
-                "EnableChroma",
-                "Enable Chroma",
-                ChromaManager.EnableChroma ? 1 : 0,
-                v => Main.SetChromaEnabled(v == 1),
-                () => new IntRange(0, 2),
-                v => v == 0 ? "UI_No" : "UI_Yes"
-            );
-
-            CreateMultiChoiceButton(
-                _chromaSection.transform,
-                "EnableTriggers",
-                "Enable Chroma Triggers",
-                ChromaManager.EnableTriggers ? 1 : 0,
-                v => Main.SetChromaTriggersEnabled(v == 1),
-                () => new IntRange(0, 2),
-                v => v == 0 ? "UI_No" : "UI_Yes"
-            );
-
-            CreateMultiChoiceButton(
-                _chromaSection.transform,
-                "EnableRainbow",
-                "Enable Rainbow Effect",
-                ChromaManager.EnableRainbow ? 1 : 0,
-                v => Main.SetRainbowEnabled(v == 1),
-                () => new IntRange(0, 2),
-                v => v == 0 ? "UI_No" : "UI_Yes"
-            );
-
-            CreateMultiChoiceButton(
-                _chromaSection.transform,
-                "RainbowSpeed",
-                "Rainbow Speed",
-                (int)(ChromaManager.RainbowSpeed * 10),
-                Main.SetRainbowSpeed,
-                () => new IntRange(0, 101),
-                v => v.ToString()
-            );
-
-            var noteTypes = (ChromaNoteType[]) Enum.GetValues(typeof(ChromaNoteType));
-            foreach (var noteType in noteTypes)
+            var page = UIHelper.CreateSettingsPage("Speen Chroma");
+            page.OnPageLoad += pageParent =>
             {
-                if (noteType == ChromaNoteType.All)
-                    continue;
+                {
+                    var group = UIHelper.CreateGroup(pageParent, "General Settings");
+                    UIHelper.CreateSectionHeader(
+                        group.Transform,
+                        "General Header",
+                        "SpeenChroma2_ModSettings_GeneralHeader",
+                        false
+                    );
+                    UIHelper.CreateToggle(
+                        group.Transform,
+                        "EnableChroma",
+                        "SpeenChroma2_ModSettings_EnableChroma",
+                        ChromaManager.EnableChroma,
+                        v =>
+                        {
+                            Main.SetChromaEnabled(v);
+                            _rainbowSection.Active = ChromaManager.EnableRainbow && ChromaManager.EnableChroma;
+                        });
+                    UIHelper.CreateToggle(
+                        group.Transform,
+                        "EnableRainbow",
+                        "SpeenChroma2_ModSettings_EnableRainbow",
+                        ChromaManager.EnableRainbow,
+                        v =>
+                        {
+                            Main.SetRainbowEnabled(v);
+                            _rainbowSection.Active = ChromaManager.EnableRainbow && ChromaManager.EnableChroma;
+                        });
+                    UIHelper.CreateToggle(
+                        group.Transform,
+                        "EnableTriggers",
+                        "SpeenChroma2_ModSettings_EnableTriggers",
+                        ChromaManager.EnableTriggers,
+                        Main.SetChromaTriggersEnabled
+                    );
+                }
+                {
+                    var group = UIHelper.CreateGroup(pageParent, "Rainbow Settings");
+                    UIHelper.CreateSectionHeader(
+                        group.Transform,
+                        "Rainbow Header",
+                        "SpeenChroma2_ModSettings_RainbowHeader",
+                        true
+                    );
+                    UIHelper.CreateMultiChoiceButton(
+                        group.Transform,
+                        "RainbowSpeed",
+                        "SpeenChroma2_ModSettings_RainbowSpeed",
+                        (int)(ChromaManager.RainbowSpeed * 10),
+                        Main.SetRainbowSpeed,
+                        () => new IntRange(0, 101),
+                        v => v.ToString()
+                    );
+                    var noteTypes = (ChromaNoteType[]) Enum.GetValues(typeof(ChromaNoteType));
+                    foreach (var noteType in noteTypes)
+                    {
+                        if (noteType == ChromaNoteType.All)
+                            continue;
 
-                var noteIsAffected = ChromaManager.AffectedNotesRainbow.Contains(noteType.ToNoteColorType());
+                        var noteIsAffected = ChromaManager.AffectedNotesRainbow.Contains(noteType.ToNoteColorType());
 
-                CreateMultiChoiceButton(
-                    _chromaSection.transform,
-                    "EnableNote" + noteType,
-                    "Enable rainbow on " + noteType.GetName(),
-                    noteIsAffected ? 1 : 0,
-                    v => Main.SetNoteTypeRainbowEnabled(noteType, v == 1),
-                    () => new IntRange(0, 2),
-                    v => v == 0 ? "UI_No" : "UI_Yes"
-                );
-            }
+                        UIHelper.CreateToggle(
+                            group.Transform,
+                            "EnableNote" + noteType,
+                            "SpeenChroma2_ModSettings_EnableRainbowFor" + noteType.ToString(),
+                            noteIsAffected,
+                            v => Main.SetNoteTypeRainbowEnabled(noteType, v)
+                        );
+                    }
+                    _rainbowSection = group;
+                }
+                _rainbowSection.Active = ChromaManager.EnableRainbow && ChromaManager.EnableChroma;
+            };
+            UIHelper.RegisterMenuInModSettingsRoot("SpeenChroma2_ModSettings_Name", page);
         }
 
         public static void AddCopyButtons(XDColorPickerPopout instance)
@@ -136,7 +149,7 @@ namespace SpeenChroma2
         {
             if (_buttonBase == null)
             {
-                _buttonBase = XDCustomiseMenu.Instance.transform.Find("MenuContainer/PopoutControlContainer/ColorPickerPopout(Clone)/ResetButton").gameObject;
+                _buttonBase = XDCustomiseMenu.Instance.transform.Find("VRContainerOffset/MenuContainer/PopoutControlContainer/ColorPickerPopout(Clone)/ResetButton").gameObject;
             }
             var button = Object.Instantiate(_buttonBase, parent);
             button.name = name;
@@ -153,49 +166,6 @@ namespace SpeenChroma2
             var xdButton = button.GetComponent<XDNavigableButton>();
             xdButton.onClick = new Button.ButtonClickedEvent();
             xdButton.onClick.AddListener(buttonAction);
-            return button;
-        }
-
-        private static void CreateChromaSection(XDCustomiseMenu instance)
-        {
-            var container = instance.transform.Find("MenuContainer/CustomiseTabsContainer/CustomiseSkinsTab/Scroll View/Viewport/Content CustomiseSkinsTab Prefab(Clone)");
-            _chromaSection = Object.Instantiate(container.Find("Menu Skins Section").gameObject, container.transform);
-            _chromaSection.name = "Chroma Section";
-            _chromaSection.transform.name = "Chroma Section";
-            _chromaSection.transform.SetSiblingIndex(3);
-            Object.Destroy(_chromaSection.transform.GetChild(2).gameObject);
-            Object.Destroy(_chromaSection.transform.GetChild(1).gameObject);
-
-            var sectionLabel = _chromaSection.transform.GetChild(0);
-            var text = sectionLabel.Find("LabelContainer/Label").GetComponent<TranslatedTextMeshPro>();
-            text.text.text = "Chroma";
-        }
-
-        private static GameObject CreateMultiChoiceButton(
-            Transform parent,
-            string name,
-            string label,
-            int defaultValue,
-            XDNavigableOptionMultiChoice.OnValueChanged valueChanged,
-            XDNavigableOptionMultiChoice.OnValueRangeRequested valueRangeRequested, 
-            XDNavigableOptionMultiChoice.OnValueTextRequested valueTextRequested)
-        {
-            if (_multiChoiceBase == null)
-            {
-                var container = XDCustomiseMenu.Instance.transform.Find("MenuContainer/CustomiseTabsContainer");
-                var colorSettingsSection = container.Find("CustomiseSkinsTab/Scroll View/Viewport/Content CustomiseSkinsTab Prefab(Clone)/Note Colors Section Variant");
-                _multiChoiceBase = colorSettingsSection.Find("NoteColorProfile").gameObject;
-            }
-
-            var button = Object.Instantiate(_multiChoiceBase, parent);
-            button.name = name;
-            button.transform.name = name;
-            Object.Destroy(button.GetComponent<XDNavigableOptionMultiChoice_IntValue>());
-            var multiChoice = button.GetComponent<XDNavigableOptionMultiChoice>();
-            multiChoice.state.callbacks = new XDNavigableOptionMultiChoice.Callbacks();
-            multiChoice.SetCallbacksAndValue(defaultValue, valueChanged, valueRangeRequested, valueTextRequested);
-            var optionLabel = button.transform.Find("OptionLabel").GetComponent<TranslatedTextMeshPro>();
-            optionLabel.text.text = label;
             return button;
         }
     }

@@ -1,0 +1,44 @@
+{
+  "SpeenChroma2_ModSettings_Name": {
+    "en": "Speen Chroma 2"
+  },
+  "SpeenChroma2_ModSettings_GeneralHeader": {
+    "en": "Chroma"
+  },
+  "SpeenChroma2_ModSettings_EnableChroma": {
+    "en": "Enable Chroma"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbow": {
+    "en": "Enable Rainbow Effect"
+  },
+  "SpeenChroma2_ModSettings_EnableTriggers": {
+    "en": "Enable Chroma Triggers"
+  },
+  "SpeenChroma2_ModSettings_RainbowHeader": {
+    "en": "Rainbow"
+  },
+  "SpeenChroma2_ModSettings_RainbowSpeed": {
+    "en": "Rainbow Speed"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbowForNoteA": {
+    "en": "Enable Effect for Note A"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbowForNoteB": {
+    "en": "Enable Effect for Note B"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbowForBeat": {
+    "en": "Enable Effect for Beat"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbowForSpinLeft": {
+    "en": "Enable Effect for Left Spin"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbowForSpinRight": {
+    "en": "Enable Effect for Right Spin"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbowForScratch": {
+    "en": "Enable Effect for Scratch"
+  },
+  "SpeenChroma2_ModSettings_EnableRainbowForAncillary": {
+    "en": "Enable Effect for Highlights"
+  }
+}

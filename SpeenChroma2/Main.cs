@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using SpinCore.Translation;
 
 namespace SpeenChroma2
 {
@@ -67,6 +69,10 @@ namespace SpeenChroma2
             Harmony harmony = new Harmony(Guid);
             harmony.PatchAll(typeof(ChromaPatches));
             Logger.LogMessage("Patched methods: " + harmony.GetPatchedMethods().Count());
+
+            var localeStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpeenChroma2.locale.json");
+            TranslationHelper.LoadTranslationsFromStream(localeStream);
+            ChromaUI.Initialize();
         }
 
         private static NoteColorType[] ParseAffectedNotes(ChromaNoteType value)

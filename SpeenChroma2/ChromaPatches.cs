@@ -38,14 +38,6 @@ namespace SpeenChroma2
             }
         }
 
-        [HarmonyPatch(typeof(XDCustomiseMenu), nameof(XDCustomiseMenu.Update))]
-        [HarmonyPostfix]
-        private static void InsertCustomChromaSection(XDCustomiseMenu __instance)
-        {
-            if (!ChromaUI.Initialized)
-                ChromaUI.Initialize(__instance);
-        }
-
         [HarmonyPatch(typeof(XDColorPickerPopout), nameof(XDColorPickerPopout.Start))]
         [HarmonyPostfix]
         private static void InsertCopyColorButton(XDColorPickerPopout __instance)

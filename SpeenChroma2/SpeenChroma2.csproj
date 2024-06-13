@@ -53,6 +53,11 @@
       </PackageReference>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="locale.json" />
+      <EmbeddedResource Include="locale.json" />
+    </ItemGroup>
     
     <Target Name="PostBuildScript" AfterTargets="AfterBuild">
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="..\srxd-dir\BepInEx\plugins" SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true" />
