@@ -35,6 +35,31 @@ namespace SpeenChroma2
                 }
             }
         }
+
+        private struct ChromaTriggersData
+        {
+            public List<ChromaTrigger> NoteA { get; set; }
+            public List<ChromaTrigger> NoteB { get; set; }
+            public List<ChromaTrigger> Beat { get; set; }
+            public List<ChromaTrigger> SpinLeft { get; set; }
+            public List<ChromaTrigger> SpinRight { get; set; }
+            public List<ChromaTrigger> Scratch { get; set; }
+            public List<ChromaTrigger> Ancillary { get; set; }
+
+            public Dictionary<NoteColorType, List<ChromaTrigger>> ToDictionary()
+            {
+                return new Dictionary<NoteColorType, List<ChromaTrigger>>
+                {
+                    { NoteColorType.NoteA, NoteA },
+                    { NoteColorType.NoteB, NoteB },
+                    { NoteColorType.Beat, Beat },
+                    { NoteColorType.SpinLeft, SpinLeft },
+                    { NoteColorType.SpinRight, SpinRight },
+                    { NoteColorType.Scratch, Scratch },
+                    { NoteColorType.Ancillary, Ancillary }
+                };
+            }
+        }
         
         private static readonly (string, NoteColorType)[] KeyPairs = {
             ("ChromaNoteA", NoteColorType.NoteA),
@@ -85,7 +110,8 @@ namespace SpeenChroma2
         {
             if (!ChromaManager.EnableTriggers) return;
             if (playableTrackDataHandle.Data.TrackDataList.Count == 0) return;
-            var trackData = playableTrackDataHandle.Data.TrackDataList[0];
+            var playableTrackData = playableTrackDataHandle.Data;
+            var trackData = playableTrackData.TrackDataList[0];
             bool loadedFromFile = true;
             string path = trackData.CustomFile?.FilePath;
             if (string.IsNullOrEmpty(path))
@@ -94,7 +120,7 @@ namespace SpeenChroma2
             string directory = Directory.GetParent(path)?.FullName;
             if (string.IsNullOrEmpty(directory))
                 return;
-            string diffStr = trackData.difficultyType.ToString().ToUpper();
+            string diffStr = playableTrackData.Difficulty.ToString().ToUpper();
             string chromaPath = Path.Combine(directory, filename + ".chroma");
             string diffChromaPath = Path.Combine(directory, filename + "_" + diffStr + ".chroma");
 
@@ -107,11 +133,11 @@ namespace SpeenChroma2
                     triggers = LoadTriggersFromChromaFile(chromaPath);
                 else
                 {
-                    triggers = LoadTriggersFromEmbeddedData(trackData);
+                    triggers = LoadTriggersFromEmbeddedData(playableTrackData, diffStr);
                     loadedFromFile = false;
                 }
 
-                if (triggers.Count > 0)
+                if (triggers?.Count > 0)
                     NotificationSystemGUI.AddMessage("Loaded " + triggers.Count + " chroma triggers");
             }
             catch (Exception e)
@@ -175,16 +201,19 @@ namespace SpeenChroma2
             return GetColor(color);
         }
 
-        private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromEmbeddedData(TrackData trackData)
+        private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromEmbeddedData(PlayableTrackData trackData, string diffStr)
         {
-            string diffStr = trackData.difficultyType.ToString().ToUpper();
-            if (CustomChartHelper.TryGetCustomData(trackData.CustomFile, "SpeenChroma_ChromaTriggers_" + diffStr, out Dictionary<NoteColorType, List<ChromaTrigger>> diffTriggers))
+            var files = new List<IMultiAssetSaveFile>();
+            trackData.GetCustomFiles(files);
+            var file = files.First();
+            if (file is null) return null;
+            if (CustomChartHelper.TryGetCustomData(file, "SpeenChroma_ChromaTriggers_" + diffStr, out ChromaTriggersData diffTriggers))
             {
-                return diffTriggers;
+                return diffTriggers.ToDictionary();
             }
-            if (CustomChartHelper.TryGetCustomData(trackData.CustomFile, "SpeenChroma_ChromaTriggers", out Dictionary<NoteColorType, List<ChromaTrigger>> allTriggers))
+            if (CustomChartHelper.TryGetCustomData(file, "SpeenChroma_ChromaTriggers", out ChromaTriggersData allTriggers))
             {
-                return allTriggers;
+                return allTriggers.ToDictionary();
             }
             return null;
         }
