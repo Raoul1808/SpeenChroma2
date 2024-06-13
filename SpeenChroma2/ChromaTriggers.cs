@@ -76,7 +76,6 @@ namespace SpeenChroma2
         public static void Setup()
         {
             RegisterEvents();
-            Track.OnLoadedIntoTrack += OnChartLoad;
         }
 
         public static void ClearAll()
@@ -106,11 +105,10 @@ namespace SpeenChroma2
             }
         }
 
-        private static void OnChartLoad(PlayableTrackDataHandle playableTrackDataHandle, PlayState[] playStates)
+        public static void LoadTriggers(PlayableTrackData playableTrackData)
         {
             if (!ChromaManager.EnableTriggers) return;
-            if (playableTrackDataHandle.Data.TrackDataList.Count == 0) return;
-            var playableTrackData = playableTrackDataHandle.Data;
+            if (playableTrackData.TrackDataList.Count == 0) return;
             var trackData = playableTrackData.TrackDataList[0];
             bool loadedFromFile = true;
             string path = trackData.CustomFile?.FilePath;

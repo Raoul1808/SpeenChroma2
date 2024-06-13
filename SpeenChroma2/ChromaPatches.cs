@@ -95,5 +95,12 @@ namespace SpeenChroma2
                 blender.Hue = hue;
             }
         }
+
+        [HarmonyPatch(typeof(SplineTrackData.DataToGenerate), MethodType.Constructor, typeof(PlayableTrackData))]
+        [HarmonyPostfix]
+        private static void ConstructorPatch(PlayableTrackData trackData)
+        {
+            ChromaTriggers.LoadTriggers(trackData);
+        }
     }
 }
