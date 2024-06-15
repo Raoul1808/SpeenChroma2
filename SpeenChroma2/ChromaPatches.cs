@@ -100,6 +100,7 @@ namespace SpeenChroma2
         [HarmonyPostfix]
         private static void ConstructorPatch(PlayableTrackData trackData)
         {
+            ChromaTriggers.ClearAll();
             ChromaTriggers.LoadTriggers(trackData);
         }
     }
