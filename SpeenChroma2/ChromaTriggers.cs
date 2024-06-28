@@ -176,6 +176,18 @@ namespace SpeenChroma2
             Main.Log("Applied " + totalCount + " triggers from " + log);
         }
 
+        private static HslColor GetColorNoDefault(string color)
+        {
+            if (color.StartsWith("#"))
+            {
+                return HslColor.FromHexRgb(color);
+            }
+
+            return UserColorDefinitions.TryGetValue(color, out var colVar)
+                ? colVar
+                : throw new Exception($"Color Variable \"{color}\" is not defined");
+        }
+
         private static HslColor GetColor(string color)
         {
             if (color.StartsWith("default"))
@@ -187,14 +199,7 @@ namespace SpeenChroma2
                 return col;
             }
 
-            if (color.StartsWith("#"))
-            {
-                return HslColor.FromHexRgb(color);
-            }
-
-            return UserColorDefinitions.TryGetValue(color, out var colVar)
-                ? colVar
-                : throw new Exception($"Color Variable \"{color}\" is not defined");
+            return GetColorNoDefault(color);
         }
         
         private static HslColor GetColor(string color, NoteColorType noteType)
@@ -251,7 +256,7 @@ namespace SpeenChroma2
                     if (DefinedColors.ContainsKey(noteType))
                         throw new Exception("Color already defined!");
                     string colStr = elems[2];
-                    var col = HslColor.FromHexRgb(colStr);
+                    var col = GetColorNoDefault(colStr);
                     trigger.StartColor = col;
                     trigger.EndColor = col;
                     if (!dict.TryGetValue(noteType, out var list))
