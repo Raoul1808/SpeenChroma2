@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using SpinCore.Triggers;
 using SpinCore.Utility;
 
@@ -72,6 +73,8 @@ namespace SpeenChroma2
         };
 
         private static readonly Dictionary<NoteColorType, HslColor> DefinedColors = new Dictionary<NoteColorType, HslColor>();
+        private static readonly Dictionary<string, HslColor> UserColorDefinitions = new Dictionary<string, HslColor>();
+        private static readonly Regex VariableNameChecker = new Regex(@"(default)|([^a-zA-Z0-9\-_]+)");
 
         public static void Setup()
         {
@@ -184,7 +187,14 @@ namespace SpeenChroma2
                 return col;
             }
 
-            return HslColor.FromHexRgb(color);
+            if (color.StartsWith("#"))
+            {
+                return HslColor.FromHexRgb(color);
+            }
+
+            return UserColorDefinitions.TryGetValue(color, out var colVar)
+                ? colVar
+                : throw new Exception($"Color Variable \"{color}\" is not defined");
         }
         
         private static HslColor GetColor(string color, NoteColorType noteType)
@@ -219,6 +229,7 @@ namespace SpeenChroma2
         private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromChromaFile(string path)
         {
             DefinedColors.Clear();
+            UserColorDefinitions.Clear();
             var dict = new Dictionary<NoteColorType, List<ChromaTrigger>>();
             foreach (string line in File.ReadAllLines(path))
             {
@@ -251,6 +262,16 @@ namespace SpeenChroma2
 
                     list.Add(trigger);
                     DefinedColors.Add(noteType, col);
+                    continue;
+                }
+
+                if (elems[0] == "set")
+                {
+                    string colorName = elems[1];
+                    string colorHex = elems[2];
+                    if (VariableNameChecker.Match(colorName).Success)
+                        throw new Exception($"Invalid color variable name: {colorName}");
+                    UserColorDefinitions[colorName] = HslColor.FromHexRgb(colorHex);
                     continue;
                 }
 
