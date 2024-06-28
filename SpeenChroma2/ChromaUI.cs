@@ -29,7 +29,7 @@ namespace SpeenChroma2
                         "SpeenChroma2_ModSettings_GeneralHeader",
                         false
                     );
-                    UIHelper.CreateToggle(
+                    UIHelper.CreateLargeToggle(
                         group.Transform,
                         "EnableChroma",
                         "SpeenChroma2_ModSettings_EnableChroma",
@@ -39,7 +39,7 @@ namespace SpeenChroma2
                             Main.SetChromaEnabled(v);
                             _rainbowSection.Active = ChromaManager.EnableRainbow && ChromaManager.EnableChroma;
                         });
-                    UIHelper.CreateToggle(
+                    UIHelper.CreateLargeToggle(
                         group.Transform,
                         "EnableRainbow",
                         "SpeenChroma2_ModSettings_EnableRainbow",
@@ -49,7 +49,7 @@ namespace SpeenChroma2
                             Main.SetRainbowEnabled(v);
                             _rainbowSection.Active = ChromaManager.EnableRainbow && ChromaManager.EnableChroma;
                         });
-                    UIHelper.CreateToggle(
+                    UIHelper.CreateLargeToggle(
                         group.Transform,
                         "EnableTriggers",
                         "SpeenChroma2_ModSettings_EnableTriggers",
@@ -65,7 +65,7 @@ namespace SpeenChroma2
                         "SpeenChroma2_ModSettings_RainbowHeader",
                         true
                     );
-                    UIHelper.CreateMultiChoiceButton(
+                    UIHelper.CreateLargeMultiChoiceButton(
                         group.Transform,
                         "RainbowSpeed",
                         "SpeenChroma2_ModSettings_RainbowSpeed",
@@ -82,7 +82,7 @@ namespace SpeenChroma2
 
                         var noteIsAffected = ChromaManager.AffectedNotesRainbow.Contains(noteType.ToNoteColorType());
 
-                        UIHelper.CreateToggle(
+                        UIHelper.CreateLargeToggle(
                             group.Transform,
                             "EnableNote" + noteType,
                             "SpeenChroma2_ModSettings_EnableRainbowFor" + noteType.ToString(),
