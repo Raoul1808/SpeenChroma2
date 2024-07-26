@@ -18,7 +18,7 @@ namespace SpeenChroma2
         
         public static void Initialize()
         {
-            var page = UIHelper.CreateSettingsPage("Speen Chroma");
+            var page = UIHelper.CreateCustomPage("Speen Chroma");
             page.OnPageLoad += pageParent =>
             {
                 {
