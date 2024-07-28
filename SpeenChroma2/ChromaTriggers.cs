@@ -138,9 +138,6 @@ namespace SpeenChroma2
                     triggers = LoadTriggersFromEmbeddedData(playableTrackData, diffStr);
                     loadedFromFile = false;
                 }
-
-                if (triggers?.Count > 0)
-                    NotificationSystemGUI.AddMessage("Loaded " + triggers.Count + " chroma triggers");
             }
             catch (Exception e)
             {
