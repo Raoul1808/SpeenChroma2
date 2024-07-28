@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -231,6 +232,11 @@ namespace SpeenChroma2
             return null;
         }
 
+        private static float ParseFloat(string num)
+        {
+            return float.Parse(num, CultureInfo.InvariantCulture);
+        }
+
         private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromChromaFile(string path)
         {
             DefinedColors.Clear();
@@ -286,7 +292,7 @@ namespace SpeenChroma2
                 if (elems[0] == "instant")
                 {
                     noteType = Util.GetNoteTypeForString(elems[1]);
-                    float time = float.Parse(elems[2]);
+                    float time = ParseFloat(elems[2]);
                     string colStr = elems[3];
                     var col = GetColor(colStr, noteType);
                     trigger.Time = time;
@@ -310,7 +316,7 @@ namespace SpeenChroma2
                 {
                     if (elems[1] == "instant")
                     {
-                        float time = float.Parse(elems[2]);
+                        float time = ParseFloat(elems[2]);
                         var note1 = Util.GetNoteTypeForString(elems[3]);
                         var note2 = Util.GetNoteTypeForString(elems[4]);
                         
@@ -354,8 +360,8 @@ namespace SpeenChroma2
 
                     if (elems[1] == "flash")
                     {
-                        float time = float.Parse(elems[2]);
-                        float end = float.Parse(elems[3]);
+                        float time = ParseFloat(elems[2]);
+                        float end = ParseFloat(elems[3]);
                         var note1 = Util.GetNoteTypeForString(elems[4]);
                         var note2 = Util.GetNoteTypeForString(elems[5]);
                         var flashColor = GetColor(elems[6].ToLower());
@@ -397,8 +403,8 @@ namespace SpeenChroma2
                 }
 
                 noteType = Util.GetNoteTypeForString(elems[0]);
-                float startTime = float.Parse(elems[1]);
-                float endTime = float.Parse(elems[2]);
+                float startTime = ParseFloat(elems[1]);
+                float endTime = ParseFloat(elems[2]);
                 string startCol = elems[3].ToLower();
                 string endCol = elems[4].ToLower();
 
