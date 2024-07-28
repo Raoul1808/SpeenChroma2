@@ -31,7 +31,6 @@ namespace SpeenChroma2
             IPlayerValue saturationValue,
             IPlayerValue lightnessValue)
         {
-            Main.Log(colorProfileIndex + " " + __instance.NoteType + " " + __instance.Hue);
             if (colorProfileIndex == 0)
             {
                 ChromaManager.AddColorBlender(noteType, GameSystemSingleton<ColorSystem, ColorSystemSettings>.Instance.ColorBlenderForNoteColorType(noteType, 0));
