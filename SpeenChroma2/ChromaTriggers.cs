@@ -332,6 +332,16 @@ namespace SpeenChroma2
                         if (elems.Length < 2)
                             throw new Exception($"Missing arguments for Swap trigger: {elems.Length}/5-7 supplied");
 
+                        HslColor GetPreviousOrDefaultColor(NoteColorType noteColor)
+                        {
+                            if (!DefinedColors.TryGetValue(noteColor, out var defaultCol))
+                                throw new Exception("Cannot use swap at this time: no previous color data found");
+
+                            return dict.TryGetValue(noteColor, out var list)
+                                ? list.LastOrDefault()?.EndColor ?? defaultCol
+                                : defaultCol;
+                        }
+
                         if (elems[1] == "instant")
                         {
                             if (elems.Length < 5)
@@ -352,9 +362,9 @@ namespace SpeenChroma2
                                 list2 = new List<ChromaTrigger>();
                                 dict.Add(note2, list2);
                             }
-                        
-                            var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
-                            var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
+
+                            var noteCol1 = GetPreviousOrDefaultColor(note1);
+                            var noteCol2 = GetPreviousOrDefaultColor(note2);
 
                             var trigger1 = new ChromaTrigger
                             {
@@ -398,8 +408,8 @@ namespace SpeenChroma2
                                 dict.Add(note2, list2);
                             }
                         
-                            var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
-                            var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
+                            var noteCol1 = GetPreviousOrDefaultColor(note1);
+                            var noteCol2 = GetPreviousOrDefaultColor(note2);
 
                             var trigger1 = new ChromaTrigger
                             {
