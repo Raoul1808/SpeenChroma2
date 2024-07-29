@@ -429,7 +429,6 @@ namespace SpeenChroma2
                             StartColor = GetColor(startCol, noteType),
                             EndColor = GetColor(endCol, noteType)
                         };
-                        trigger.EnsureSmoothTransition();
                         if (!dict.TryGetValue(noteType, out var list0))
                         {
                             list0 = new List<ChromaTrigger>();
@@ -448,6 +447,10 @@ namespace SpeenChroma2
             foreach (var pair in dict)
             {
                 pair.Value.Sort((t1, t2) => t1.Time.CompareTo(t2.Time));
+                foreach (var trigger in pair.Value)
+                {
+                    trigger.EnsureSmoothTransition();
+                }
             }
             return dict;
         }
