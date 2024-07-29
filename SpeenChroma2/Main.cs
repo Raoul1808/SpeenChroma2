@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
 using SpinCore.Translation;
 
@@ -17,8 +16,6 @@ namespace SpeenChroma2
         private const string Name = "Speen Chroma 2";
         private const string Version = "2.0.0";
 
-        private static ManualLogSource _logger;
-
         private static ConfigFile _config = new ConfigFile(Path.Combine(Paths.ConfigPath, "SpeenChroma2.cfg"), true);
 
         private static ConfigEntry<bool> _enableChromaEntry;
@@ -30,7 +27,7 @@ namespace SpeenChroma2
         private void Awake()
         {
             _config.SaveOnConfigSet = true;
-            _logger = Logger;
+            Log.Init(Logger);
             Logger.LogMessage("Hi from Speen Chroma 2!");
 
             _enableChromaEntry = _config.Bind("Chroma",
@@ -139,7 +136,5 @@ namespace SpeenChroma2
             _rainbowSpeed.Value = speed / 10f;
             ChromaManager.RainbowSpeed = speed / 10f;
         }
-
-        internal static void Log(object msg) => _logger.LogMessage(msg);
     }
 }

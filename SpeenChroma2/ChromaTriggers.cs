@@ -141,7 +141,8 @@ namespace SpeenChroma2
             }
             catch (Exception e)
             {
-                NotificationSystemGUI.AddMessage("ERROR: " + e);
+                NotificationSystemGUI.AddMessage("An error occurred while loading triggers; check console for details");
+                Log.Error($"An error occurred while loading triggers: {e}");
             }
 
             if (triggers == null || triggers.Count == 0)
@@ -171,7 +172,7 @@ namespace SpeenChroma2
             }
 
             string log = loadedFromFile ? "file " + filename + ".chroma" : "embedded data";
-            Main.Log("Applied " + totalCount + " triggers from " + log);
+            Log.Info("Applied " + totalCount + " triggers from " + log);
         }
 
         private static HslColor GetColorNoDefault(string color)
@@ -241,182 +242,204 @@ namespace SpeenChroma2
             var dict = new Dictionary<NoteColorType, List<ChromaTrigger>>();
             foreach (string line in File.ReadAllLines(path))
             {
-                if (line.StartsWith("#"))
+                if (line.StartsWith("#") || string.IsNullOrWhiteSpace(line))
                     continue;
 
-                var elems = line.Trim().ToLower().Split(' ');
-                var trigger = new ChromaTrigger();
-                NoteColorType noteType;
-                
-                // First line check
-                if (elems.Length < 3)
+                var elems = line.Trim().ToLower().Split(null);
+                if (elems.Length <= 0)
                     continue;
-                if (elems[0] == "start")
+
+                switch (elems[0])
                 {
-                    trigger.Time = 0f;
-                    trigger.Duration = 0f;
-                    noteType = Util.GetNoteTypeForString(elems[1]);
-                    if (DefinedColors.ContainsKey(noteType))
-                        throw new Exception("Color already defined!");
-                    string colStr = elems[2];
-                    var col = GetColorNoDefault(colStr);
-                    trigger.StartColor = col;
-                    trigger.EndColor = col;
-                    if (!dict.TryGetValue(noteType, out var list))
+                    case "start":
                     {
-                        list = new List<ChromaTrigger>();
-                        dict.Add(noteType, list);
+                        if (elems.Length < 3)
+                            throw new Exception($"Missing arguments for Start trigger: {elems.Length}/3 supplied");
+                        var noteType = Util.GetNoteTypeForString(elems[1]);
+                        if (DefinedColors.ContainsKey(noteType))
+                            throw new Exception("Color already defined!");
+                        string colStr = elems[2];
+                        var col = GetColorNoDefault(colStr);
+                        var trigger = new ChromaTrigger
+                        {
+                            Time = 0f,
+                            Duration = 0f,
+                            StartColor = col,
+                            EndColor = col
+                        };
+                        if (!dict.TryGetValue(noteType, out var list))
+                        {
+                            list = new List<ChromaTrigger>();
+                            dict.Add(noteType, list);
+                        }
+
+                        list.Add(trigger);
+                        DefinedColors.Add(noteType, col);
+                        break;
                     }
 
-                    list.Add(trigger);
-                    DefinedColors.Add(noteType, col);
-                    continue;
-                }
-
-                if (elems[0] == "set")
-                {
-                    string colorName = elems[1];
-                    string colorHex = elems[2];
-                    if (VariableNameChecker.Match(colorName).Success)
-                        throw new Exception($"Invalid color variable name: {colorName}");
-                    UserColorDefinitions[colorName] = HslColor.FromHexRgb(colorHex);
-                    continue;
-                }
-
-                if (elems.Length < 4)
-                    continue;
-
-                if (elems[0] == "instant")
-                {
-                    noteType = Util.GetNoteTypeForString(elems[1]);
-                    float time = ParseFloat(elems[2]);
-                    string colStr = elems[3];
-                    var col = GetColor(colStr, noteType);
-                    trigger.Time = time;
-                    trigger.Duration = 0f;
-                    trigger.StartColor = col;
-                    trigger.EndColor = col;
-                    if (!dict.TryGetValue(noteType, out var list))
+                    case "set":
                     {
-                        list = new List<ChromaTrigger>();
-                        dict.Add(noteType, list);
+                        if (elems.Length < 3)
+                            throw new Exception($"Missing arguments for Set trigger: {elems.Length}/3 supplied");
+                        string colorName = elems[1];
+                        string colorHex = elems[2];
+                        if (VariableNameChecker.Match(colorName).Success)
+                            throw new Exception($"Invalid color variable name: {colorName}");
+                        UserColorDefinitions[colorName] = HslColor.FromHexRgb(colorHex);
+                        break;
                     }
 
-                    list.Add(trigger);
-                    continue;
-                }
-
-                if (elems.Length < 5)
-                    continue;
-
-                if (elems[0] == "swap")
-                {
-                    if (elems[1] == "instant")
+                    case "instant":
                     {
+                        if (elems.Length < 4)
+                            throw new Exception($"Missing arguments for Instant trigger: {elems.Length}/4 supplied");
+                        var noteType = Util.GetNoteTypeForString(elems[1]);
                         float time = ParseFloat(elems[2]);
-                        var note1 = Util.GetNoteTypeForString(elems[3]);
-                        var note2 = Util.GetNoteTypeForString(elems[4]);
-                        
-                        if (!dict.TryGetValue(note1, out var list1))
-                        {
-                            list1 = new List<ChromaTrigger>();
-                            dict.Add(note1, list1);
-                        }
-
-                        if (!dict.TryGetValue(note2, out var list2))
-                        {
-                            list2 = new List<ChromaTrigger>();
-                            dict.Add(note2, list2);
-                        }
-                        
-                        var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
-                        var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
-
-                        var trigger1 = new ChromaTrigger
+                        string colStr = elems[3];
+                        var col = GetColor(colStr, noteType);
+                        var trigger = new ChromaTrigger
                         {
                             Time = time,
                             Duration = 0f,
-                            StartColor = noteCol2,
-                            EndColor = noteCol2,
+                            StartColor = col,
+                            EndColor = col
                         };
-                        var trigger2 = new ChromaTrigger
+                        if (!dict.TryGetValue(noteType, out var list))
                         {
-                            Time = time,
-                            Duration = 0f,
-                            StartColor = noteCol1,
-                            EndColor = noteCol1,
-                        };
-                        
-                        list1.Add(trigger1);
-                        list2.Add(trigger2);
-                        continue;
+                            list = new List<ChromaTrigger>();
+                            dict.Add(noteType, list);
+                        }
+
+                        list.Add(trigger);
+                        break;
                     }
 
-                    if (elems.Length < 7)
-                        continue;
-
-                    if (elems[1] == "flash")
+                    case "swap":
                     {
-                        float time = ParseFloat(elems[2]);
-                        float end = ParseFloat(elems[3]);
-                        var note1 = Util.GetNoteTypeForString(elems[4]);
-                        var note2 = Util.GetNoteTypeForString(elems[5]);
-                        var flashColor = GetColor(elems[6].ToLower());
-                        
-                        if (!dict.TryGetValue(note1, out var list1))
+                        if (elems.Length < 2)
+                            throw new Exception($"Missing arguments for Swap trigger: {elems.Length}/5-7 supplied");
+
+                        if (elems[1] == "instant")
                         {
-                            list1 = new List<ChromaTrigger>();
-                            dict.Add(note1, list1);
+                            if (elems.Length < 5)
+                                throw new Exception($"Missing arguments for Swap Instant trigger: {elems.Length}/5 supplied");
+
+                            float time = ParseFloat(elems[2]);
+                            var note1 = Util.GetNoteTypeForString(elems[3]);
+                            var note2 = Util.GetNoteTypeForString(elems[4]);
+                        
+                            if (!dict.TryGetValue(note1, out var list1))
+                            {
+                                list1 = new List<ChromaTrigger>();
+                                dict.Add(note1, list1);
+                            }
+
+                            if (!dict.TryGetValue(note2, out var list2))
+                            {
+                                list2 = new List<ChromaTrigger>();
+                                dict.Add(note2, list2);
+                            }
+                        
+                            var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
+                            var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
+
+                            var trigger1 = new ChromaTrigger
+                            {
+                                Time = time,
+                                Duration = 0f,
+                                StartColor = noteCol2,
+                                EndColor = noteCol2,
+                            };
+                            var trigger2 = new ChromaTrigger
+                            {
+                                Time = time,
+                                Duration = 0f,
+                                StartColor = noteCol1,
+                                EndColor = noteCol1,
+                            };
+                        
+                            list1.Add(trigger1);
+                            list2.Add(trigger2);
+                            break;
+                        }
+                        
+                        if (elems[1] == "flash")
+                        {
+                            if (elems.Length < 7)
+                                throw new Exception($"Missing arguments for Swap Flash trigger: {elems.Length}/7 supplied");
+                            float time = ParseFloat(elems[2]);
+                            float end = ParseFloat(elems[3]);
+                            var note1 = Util.GetNoteTypeForString(elems[4]);
+                            var note2 = Util.GetNoteTypeForString(elems[5]);
+                            var flashColor = GetColor(elems[6].ToLower());
+                        
+                            if (!dict.TryGetValue(note1, out var list1))
+                            {
+                                list1 = new List<ChromaTrigger>();
+                                dict.Add(note1, list1);
+                            }
+
+                            if (!dict.TryGetValue(note2, out var list2))
+                            {
+                                list2 = new List<ChromaTrigger>();
+                                dict.Add(note2, list2);
+                            }
+                        
+                            var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
+                            var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
+
+                            var trigger1 = new ChromaTrigger
+                            {
+                                Time = time,
+                                Duration = end - time,
+                                StartColor = flashColor,
+                                EndColor = noteCol2,
+                            };
+                            var trigger2 = new ChromaTrigger
+                            {
+                                Time = time,
+                                Duration = end - time,
+                                StartColor = flashColor,
+                                EndColor = noteCol1,
+                            };
+                        
+                            list1.Add(trigger1);
+                            list2.Add(trigger2);
+                            continue;
                         }
 
-                        if (!dict.TryGetValue(note2, out var list2))
-                        {
-                            list2 = new List<ChromaTrigger>();
-                            dict.Add(note2, list2);
-                        }
-                        
-                        var noteCol1 = list1.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note1);
-                        var noteCol2 = list2.Last()?.EndColor ?? ChromaManager.GetDefaultColorForNoteType(note2);
+                        throw new Exception($"Invalid swap subcommand: expected Instant/Flash, found {elems[1]}.");
+                    }
 
-                        var trigger1 = new ChromaTrigger
+                    default:
+                    {
+                        if (elems.Length < 5)
+                            throw new Exception($"Missing arguments for generic trigger: {elems.Length}/5 supplied");
+                        var noteType = Util.GetNoteTypeForString(elems[0]);
+                        float startTime = ParseFloat(elems[1]);
+                        float endTime = ParseFloat(elems[2]);
+                        string startCol = elems[3].ToLower();
+                        string endCol = elems[4].ToLower();
+
+                        var trigger = new ChromaTrigger
                         {
-                            Time = time,
-                            Duration = end - time,
-                            StartColor = flashColor,
-                            EndColor = noteCol2,
+                            Time = startTime,
+                            Duration = endTime - startTime,
+                            StartColor = GetColor(startCol, noteType),
+                            EndColor = GetColor(endCol, noteType)
                         };
-                        var trigger2 = new ChromaTrigger
+                        trigger.EnsureSmoothTransition();
+                        if (!dict.TryGetValue(noteType, out var list0))
                         {
-                            Time = time,
-                            Duration = end - time,
-                            StartColor = flashColor,
-                            EndColor = noteCol1,
-                        };
-                        
-                        list1.Add(trigger1);
-                        list2.Add(trigger2);
-                        continue;
+                            list0 = new List<ChromaTrigger>();
+                            dict.Add(noteType, list0);
+                        }
+
+                        list0.Add(trigger);
+                        break;
                     }
                 }
-
-                noteType = Util.GetNoteTypeForString(elems[0]);
-                float startTime = ParseFloat(elems[1]);
-                float endTime = ParseFloat(elems[2]);
-                string startCol = elems[3].ToLower();
-                string endCol = elems[4].ToLower();
-
-                trigger.Time = startTime;
-                trigger.Duration = endTime - startTime;
-                trigger.StartColor = GetColor(startCol, noteType);
-                trigger.EndColor = GetColor(endCol, noteType);
-                trigger.EnsureSmoothTransition();
-                if (!dict.TryGetValue(noteType, out var list0))
-                {
-                    list0 = new List<ChromaTrigger>();
-                    dict.Add(noteType, list0);
-                }
-
-                list0.Add(trigger);
             }
 
             if (dict.Count == 0)
