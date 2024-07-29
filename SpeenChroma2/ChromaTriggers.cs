@@ -230,18 +230,30 @@ namespace SpeenChroma2
             return null;
         }
 
-        private static float ParseFloat(string num)
-        {
-            return float.Parse(num, CultureInfo.InvariantCulture);
-        }
-
         private static Dictionary<NoteColorType, List<ChromaTrigger>> LoadTriggersFromChromaFile(string path)
         {
             DefinedColors.Clear();
             UserColorDefinitions.Clear();
             var dict = new Dictionary<NoteColorType, List<ChromaTrigger>>();
-            foreach (string line in File.ReadAllLines(path))
+
+            int repeatCount = 0;
+            int currentRepeatIteration = 0;
+            int repeatLineBeginning = 0;
+            float repeatInterval = 0f;
+            bool repeating = false;
+
+            var chromaLines = File.ReadAllLines(path);
+
+            float ParseFloat(string num) => float.Parse(num, CultureInfo.InvariantCulture);
+            int ParseInt(string num) => int.Parse(num, CultureInfo.InvariantCulture);
+            float ParseTimeFloat(string num)
             {
+                return repeating ? ParseFloat(num) + repeatInterval * currentRepeatIteration : ParseFloat(num);
+            }
+
+            for (int lineNumber = 0; lineNumber < chromaLines.Length; lineNumber++)
+            {
+                string line = chromaLines[lineNumber];
                 if (line.StartsWith("#") || string.IsNullOrWhiteSpace(line))
                     continue;
 
@@ -295,7 +307,7 @@ namespace SpeenChroma2
                         if (elems.Length < 4)
                             throw new Exception($"Missing arguments for Instant trigger: {elems.Length}/4 supplied");
                         var noteType = Util.GetNoteTypeForString(elems[1]);
-                        float time = ParseFloat(elems[2]);
+                        float time = ParseTimeFloat(elems[2]);
                         string colStr = elems[3];
                         var col = GetColor(colStr, noteType);
                         var trigger = new ChromaTrigger
@@ -325,7 +337,7 @@ namespace SpeenChroma2
                             if (elems.Length < 5)
                                 throw new Exception($"Missing arguments for Swap Instant trigger: {elems.Length}/5 supplied");
 
-                            float time = ParseFloat(elems[2]);
+                            float time = ParseTimeFloat(elems[2]);
                             var note1 = Util.GetNoteTypeForString(elems[3]);
                             var note2 = Util.GetNoteTypeForString(elems[4]);
                         
@@ -368,8 +380,8 @@ namespace SpeenChroma2
                         {
                             if (elems.Length < 7)
                                 throw new Exception($"Missing arguments for Swap Flash trigger: {elems.Length}/7 supplied");
-                            float time = ParseFloat(elems[2]);
-                            float end = ParseFloat(elems[3]);
+                            float time = ParseTimeFloat(elems[2]);
+                            float end = ParseTimeFloat(elems[3]);
                             var note1 = Util.GetNoteTypeForString(elems[4]);
                             var note2 = Util.GetNoteTypeForString(elems[5]);
                             var flashColor = GetColor(elems[6].ToLower());
@@ -412,13 +424,49 @@ namespace SpeenChroma2
                         throw new Exception($"Invalid swap subcommand: expected Instant/Flash, found {elems[1]}.");
                     }
 
+                    case "repeat":
+                    {
+                        if (elems.Length < 4)
+                            throw new Exception($"Missing arguments for Repeat block: {elems.Length}/4 supplied");
+
+                        if (elems[2] != "interval")
+                            throw new Exception("Invalid instruction. Usage: \"Repeat X interval Y\"");
+                        
+                        if (repeating)
+                            throw new Exception("Nested repeat blocks are not supported");
+
+                        repeating = true;
+                        repeatCount = ParseInt(elems[1]);
+                        repeatInterval = ParseFloat(elems[3]);
+                        repeatLineBeginning = lineNumber;
+                        break;
+                    }
+
+                    case "endrepeat":
+                    {
+                        if (!repeating)
+                            throw new Exception("Unexpected EndRepeat instruction");
+                        if (++currentRepeatIteration != repeatCount)
+                        {
+                            lineNumber = repeatLineBeginning;
+                            continue;
+                        }
+
+                        repeatCount = 0;
+                        currentRepeatIteration = 0;
+                        repeatInterval = 0f;
+                        repeatLineBeginning = 0;
+                        repeating = false;
+                        break;
+                    }
+
                     default:
                     {
                         if (elems.Length < 5)
                             throw new Exception($"Missing arguments for generic trigger: {elems.Length}/5 supplied");
                         var noteType = Util.GetNoteTypeForString(elems[0]);
-                        float startTime = ParseFloat(elems[1]);
-                        float endTime = ParseFloat(elems[2]);
+                        float startTime = ParseTimeFloat(elems[1]);
+                        float endTime = ParseTimeFloat(elems[2]);
                         string startCol = elems[3].ToLower();
                         string endCol = elems[4].ToLower();
 
@@ -429,13 +477,13 @@ namespace SpeenChroma2
                             StartColor = GetColor(startCol, noteType),
                             EndColor = GetColor(endCol, noteType)
                         };
-                        if (!dict.TryGetValue(noteType, out var list0))
+                        if (!dict.TryGetValue(noteType, out var list))
                         {
-                            list0 = new List<ChromaTrigger>();
-                            dict.Add(noteType, list0);
+                            list = new List<ChromaTrigger>();
+                            dict.Add(noteType, list);
                         }
 
-                        list0.Add(trigger);
+                        list.Add(trigger);
                         break;
                     }
                 }
