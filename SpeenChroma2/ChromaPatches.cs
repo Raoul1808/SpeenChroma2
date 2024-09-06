@@ -2,7 +2,6 @@ using System;
 using HarmonyLib;
 using UnityEngine;
 using XDMenuPlay;
-using XDMenuPlay.Customise;
 
 namespace SpeenChroma2
 {
@@ -33,7 +32,8 @@ namespace SpeenChroma2
         {
             if (colorProfileIndex == 0)
             {
-                ChromaManager.AddColorBlender(noteType, GameSystemSingleton<ColorSystem, ColorSystemSettings>.Instance.ColorBlenderForNoteColorType(noteType, 0));
+                var gameBlender = GameSystemSingleton<ColorSystem, ColorSystemSettings>.Instance.ColorBlenderForNoteColorType(noteType, 0);
+                ChromaManager.AddColorBlender(noteType, new ChromaBlender(gameBlender));
             }
         }
 
@@ -86,7 +86,7 @@ namespace SpeenChroma2
             foreach (var note in ChromaManager.AffectedNotesRainbow)
             {
                 var blender = ChromaManager.GetBlenderForNoteType(note);
-                float hue = blender.hue;
+                float hue = blender.Hue;
                 hue += ChromaManager.RainbowSpeed * 0.1f * Time.deltaTime;
                 if (hue > 1f)
                     hue -= 1f;
@@ -94,6 +94,13 @@ namespace SpeenChroma2
                     hue += 1f;
                 blender.Hue = hue;
             }
+        }
+
+        [HarmonyPatch(typeof(Track), nameof(Track.LateUpdate))]
+        [HarmonyPostfix]
+        private static void PropagateChromaEffects()
+        {
+            ChromaManager.PropagateAllColors();
         }
 
         [HarmonyPatch(typeof(SplineTrackData.DataToGenerate), MethodType.Constructor, typeof(PlayableTrackData))]

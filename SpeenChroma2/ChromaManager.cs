@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data;
 
 namespace SpeenChroma2
 {
@@ -13,7 +14,7 @@ namespace SpeenChroma2
         internal static bool AreTriggersLoaded { get; set; }
 
         private static Dictionary<NoteColorType, (float Hue, float Saturation, float Lightness)> _defaultColors;
-        private static Dictionary<NoteColorType, GameplayColorBlender> _colorBlenders = new Dictionary<NoteColorType, GameplayColorBlender>();
+        private static Dictionary<NoteColorType, ChromaBlender> _colorBlenders = new Dictionary<NoteColorType, ChromaBlender>();
 
         public static void GetDefaultColors()
         {
@@ -38,12 +39,12 @@ namespace SpeenChroma2
             }
         }
 
-        public static void AddColorBlender(NoteColorType color, GameplayColorBlender blender)
+        public static void AddColorBlender(NoteColorType color, ChromaBlender blender)
         {
             _colorBlenders.Add(color, blender);
         }
 
-        public static GameplayColorBlender GetBlenderForNoteType(NoteColorType color)
+        public static ChromaBlender GetBlenderForNoteType(NoteColorType color)
         {
             return _colorBlenders[color];
         }
@@ -56,6 +57,14 @@ namespace SpeenChroma2
             _colorBlenders[colorType].Hue = color.H;
             _colorBlenders[colorType].Saturation = color.S;
             _colorBlenders[colorType].Lightness = color.L;
+        }
+
+        public static void PropagateAllColors()
+        {
+            foreach (var blender in _colorBlenders.Values)
+            {
+                blender.PropagateColors();
+            }
         }
     }
 }
