@@ -1,3 +1,6 @@
+using System;
+using UnityEngine;
+
 namespace SpeenChroma2
 {
     public class ChromaBlender
@@ -46,6 +49,11 @@ namespace SpeenChroma2
             if (!_dirty) return;
             _dirty = false;
             _blender.GenerateBlend();
+        }
+
+        public bool MatchesColor(HslColor color)
+        {
+            return Mathf.Approximately(color.H, Hue) && Mathf.Approximately(color.S, Saturation) && Mathf.Approximately(color.L, Lightness);
         }
     }
 }

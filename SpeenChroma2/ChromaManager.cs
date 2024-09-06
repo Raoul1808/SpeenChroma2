@@ -53,6 +53,9 @@ namespace SpeenChroma2
         {
             if (!EnableChroma)
                 return;
+            var blender = _colorBlenders[colorType];
+            if (blender.MatchesColor(color))
+                return;
             color.WrapAndClamp();
             _colorBlenders[colorType].Hue = color.H;
             _colorBlenders[colorType].Saturation = color.S;
