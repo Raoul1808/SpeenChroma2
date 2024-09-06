@@ -147,7 +147,8 @@ namespace SpeenChroma2
 
             if (triggers == null || triggers.Count == 0)
                 return;
-            
+
+            ChromaManager.AreTriggersLoaded = true;
             int totalCount = 0;
             foreach (var pair in KeyPairs)
             {

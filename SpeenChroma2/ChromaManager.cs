@@ -9,7 +9,9 @@ namespace SpeenChroma2
         public static NoteColorType[] AffectedNotesRainbow { get; set; }
         public static bool EnableRainbow { get; set; }
         public static float RainbowSpeed { get; set; }
-        
+
+        internal static bool AreTriggersLoaded { get; set; }
+
         private static Dictionary<NoteColorType, (float Hue, float Saturation, float Lightness)> _defaultColors;
         private static Dictionary<NoteColorType, GameplayColorBlender> _colorBlenders = new Dictionary<NoteColorType, GameplayColorBlender>();
 

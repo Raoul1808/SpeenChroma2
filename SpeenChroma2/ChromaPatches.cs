@@ -74,6 +74,7 @@ namespace SpeenChroma2
         {
             if (_currentlyIngame || _restarting) return;
             ChromaTriggers.ClearAll();
+            ChromaManager.AreTriggersLoaded = false;
             ChromaManager.ResetColorBlenders();
         }
 
@@ -81,7 +82,7 @@ namespace SpeenChroma2
         [HarmonyPostfix]
         private static void Track_Update_Postfix()
         {
-            if (!ChromaManager.EnableChroma || !ChromaManager.EnableRainbow) return;
+            if (!ChromaManager.EnableChroma || !ChromaManager.EnableRainbow || ChromaManager.AreTriggersLoaded) return;
             foreach (var note in ChromaManager.AffectedNotesRainbow)
             {
                 var blender = ChromaManager.GetBlenderForNoteType(note);
