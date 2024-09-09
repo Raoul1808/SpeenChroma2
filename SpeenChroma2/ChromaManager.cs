@@ -36,6 +36,7 @@ namespace SpeenChroma2
                 b.Hue = _defaultColors[k].Hue;
                 b.Saturation = _defaultColors[k].Saturation;
                 b.Lightness = _defaultColors[k].Lightness;
+                b.PropagateColors();
             }
         }
 
