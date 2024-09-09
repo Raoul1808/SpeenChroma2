@@ -62,7 +62,7 @@ namespace SpeenChroma2
                 };
             }
         }
-        
+
         private static readonly (string, NoteColorType)[] KeyPairs = {
             ("ChromaNoteA", NoteColorType.NoteA),
             ("ChromaNoteB", NoteColorType.NoteB),
@@ -201,7 +201,7 @@ namespace SpeenChroma2
 
             return GetColorNoDefault(color);
         }
-        
+
         private static HslColor GetColor(string color, NoteColorType noteType)
         {
             if (color == "default")
@@ -351,7 +351,7 @@ namespace SpeenChroma2
                             float time = ParseTimeFloat(elems[2]);
                             var note1 = Util.GetNoteTypeForString(elems[3]);
                             var note2 = Util.GetNoteTypeForString(elems[4]);
-                        
+
                             if (!dict.TryGetValue(note1, out var list1))
                             {
                                 list1 = new List<ChromaTrigger>();
@@ -381,7 +381,7 @@ namespace SpeenChroma2
                                 StartColor = noteCol1,
                                 EndColor = noteCol1,
                             };
-                        
+
                             list1.Add(trigger1);
                             list2.Add(trigger2);
                             break;
@@ -396,7 +396,7 @@ namespace SpeenChroma2
                             var note1 = Util.GetNoteTypeForString(elems[4]);
                             var note2 = Util.GetNoteTypeForString(elems[5]);
                             var flashColor = GetColor(elems[6].ToLower());
-                        
+
                             if (!dict.TryGetValue(note1, out var list1))
                             {
                                 list1 = new List<ChromaTrigger>();
@@ -408,7 +408,7 @@ namespace SpeenChroma2
                                 list2 = new List<ChromaTrigger>();
                                 dict.Add(note2, list2);
                             }
-                        
+
                             var noteCol1 = GetPreviousOrDefaultColor(note1);
                             var noteCol2 = GetPreviousOrDefaultColor(note2);
 
@@ -426,7 +426,7 @@ namespace SpeenChroma2
                                 StartColor = flashColor,
                                 EndColor = noteCol1,
                             };
-                        
+
                             list1.Add(trigger1);
                             list2.Add(trigger2);
                             continue;
@@ -442,7 +442,7 @@ namespace SpeenChroma2
 
                         if (elems[2] != "interval")
                             throw new Exception("Invalid instruction. Usage: \"Repeat X interval Y\"");
-                        
+
                         if (repeating)
                             throw new Exception("Nested repeat blocks are not supported");
 

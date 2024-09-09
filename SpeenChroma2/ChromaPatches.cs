@@ -9,7 +9,7 @@ namespace SpeenChroma2
     {
         private static bool _currentlyIngame;
         private static bool _restarting;
-        
+
         [HarmonyPatch(
             typeof(ColorValueWrapper),
             MethodType.Constructor,
@@ -59,7 +59,7 @@ namespace SpeenChroma2
         {
             _restarting = true;
         }
-        
+
         [HarmonyPatch(typeof(Track), nameof(Track.StopTrack))]
         [HarmonyPrefix]
         private static void LeaveGame()

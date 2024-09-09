@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Data;
 
 namespace SpeenChroma2
 {
@@ -14,7 +13,7 @@ namespace SpeenChroma2
         internal static bool AreTriggersLoaded { get; set; }
 
         private static Dictionary<NoteColorType, (float Hue, float Saturation, float Lightness)> _defaultColors;
-        private static Dictionary<NoteColorType, ChromaBlender> _colorBlenders = new Dictionary<NoteColorType, ChromaBlender>();
+        private static readonly Dictionary<NoteColorType, ChromaBlender> ColorBlenders = new Dictionary<NoteColorType, ChromaBlender>();
 
         public static void GetDefaultColors()
         {
@@ -29,7 +28,7 @@ namespace SpeenChroma2
         
         public static void ResetColorBlenders()
         {
-            foreach (var pair in _colorBlenders)
+            foreach (var pair in ColorBlenders)
             {
                 var b = pair.Value;
                 var k = pair.Key;
@@ -42,30 +41,30 @@ namespace SpeenChroma2
 
         public static void AddColorBlender(NoteColorType color, ChromaBlender blender)
         {
-            _colorBlenders.Add(color, blender);
+            ColorBlenders.Add(color, blender);
         }
 
         public static ChromaBlender GetBlenderForNoteType(NoteColorType color)
         {
-            return _colorBlenders[color];
+            return ColorBlenders[color];
         }
 
         public static void SetColorForNoteType(NoteColorType colorType, HslColor color)
         {
             if (!EnableChroma)
                 return;
-            var blender = _colorBlenders[colorType];
+            var blender = ColorBlenders[colorType];
             if (blender.MatchesColor(color))
                 return;
             color.WrapAndClamp();
-            _colorBlenders[colorType].Hue = color.H;
-            _colorBlenders[colorType].Saturation = color.S;
-            _colorBlenders[colorType].Lightness = color.L;
+            ColorBlenders[colorType].Hue = color.H;
+            ColorBlenders[colorType].Saturation = color.S;
+            ColorBlenders[colorType].Lightness = color.L;
         }
 
         public static void PropagateAllColors()
         {
-            foreach (var blender in _colorBlenders.Values)
+            foreach (var blender in ColorBlenders.Values)
             {
                 blender.PropagateColors();
             }

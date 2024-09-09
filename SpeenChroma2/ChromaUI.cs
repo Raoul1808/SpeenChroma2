@@ -15,7 +15,7 @@ namespace SpeenChroma2
         private static GameObject _buttonBase;
 
         private static CustomGroup _rainbowSection;
-        
+
         public static void Initialize()
         {
             var page = UIHelper.CreateCustomPage("Speen Chroma");
@@ -142,9 +142,9 @@ namespace SpeenChroma2
         }
 
         private static GameObject CreateButtonWithClipboardIcon(
-            Transform parent, 
+            Transform parent,
             string name,
-            string label, 
+            string label,
             UnityAction buttonAction)
         {
             if (_buttonBase == null)

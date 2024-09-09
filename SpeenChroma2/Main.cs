@@ -23,7 +23,7 @@ namespace SpeenChroma2
         private static ConfigEntry<bool> _enableRainbowEntry;
         private static ConfigEntry<ChromaNoteType> _affectedNotesRainbowEntry;
         private static ConfigEntry<float> _rainbowSpeed;
-        
+
         private void Awake()
         {
             _config.SaveOnConfigSet = true;
@@ -41,7 +41,7 @@ namespace SpeenChroma2
                 true,
                 "If set to false, no chart-specific color-changing effects will occur.");
             ChromaManager.EnableTriggers = _enableChromaTriggersEntry.Value;
-            
+
             _enableRainbowEntry = _config.Bind("Chroma.Rainbow",
                 "Enable",
                 true,
@@ -53,16 +53,16 @@ namespace SpeenChroma2
                 ChromaNoteType.All,
                 "The list of notes affected by chroma effects. The `All` value overrides all other possible values.");
             ChromaManager.AffectedNotesRainbow = ParseAffectedNotes(_affectedNotesRainbowEntry.Value);
-            
+
             _rainbowSpeed = _config.Bind("Chroma.Rainbow",
                 "Speed",
                 1f,
                 new ConfigDescription("Chroma rainbow speed.", new AcceptableValueRange<float>(0f, 10f)));
             ChromaManager.RainbowSpeed = _rainbowSpeed.Value;
-            
+
             ChromaManager.GetDefaultColors();
             ChromaTriggers.Setup();
-            
+
             Harmony harmony = new Harmony(Guid);
             harmony.PatchAll(typeof(ChromaPatches));
             Logger.LogMessage("Patched methods: " + harmony.GetPatchedMethods().Count());
@@ -119,13 +119,9 @@ namespace SpeenChroma2
         internal static void SetNoteTypeRainbowEnabled(ChromaNoteType noteType, bool enabled)
         {
             if (enabled)
-            {
                 _affectedNotesRainbowEntry.Value |= noteType;
-            }
             else
-            {
                 _affectedNotesRainbowEntry.Value &= ~noteType;
-            }
 
             ChromaManager.AffectedNotesRainbow = ParseAffectedNotes(_affectedNotesRainbowEntry.Value);
             ChromaManager.ResetColorBlenders();
