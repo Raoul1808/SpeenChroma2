@@ -63,4 +63,8 @@
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="..\srxd-dir\BepInEx\plugins" SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true" />
     </Target>
 
+    <Target Name="CopyPdbFile" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Debug' And '$(OS)' == 'Unix'">
+        <Copy SourceFiles="$(TargetDir)\SpeenChroma2.pdb" DestinationFolder="..\srxd-dir\BepInEx\plugins" SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true" />
+    </Target>
+
 </Project>
