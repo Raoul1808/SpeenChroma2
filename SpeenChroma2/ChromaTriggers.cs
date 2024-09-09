@@ -237,11 +237,11 @@ namespace SpeenChroma2
             UserColorDefinitions.Clear();
             var dict = new Dictionary<NoteColorType, List<ChromaTrigger>>();
 
-            int repeatCount = 0;
-            int currentRepeatIteration = 0;
-            int repeatLineBeginning = 0;
-            float repeatInterval = 0f;
-            bool repeating = false;
+            int repeatDepth = 0;
+            var repeatCounts = new List<int>();
+            var currentRepeatIterations = new List<int>();
+            var repeatLineBeginnings = new List<int>();
+            var repeatIntervals = new List<float>();
 
             var chromaLines = File.ReadAllLines(path);
 
@@ -249,7 +249,13 @@ namespace SpeenChroma2
             int ParseInt(string num) => int.Parse(num, CultureInfo.InvariantCulture);
             float ParseTimeFloat(string num)
             {
-                return repeating ? ParseFloat(num) + repeatInterval * currentRepeatIteration : ParseFloat(num);
+                float time = ParseFloat(num);
+                if (repeatDepth <= 0)
+                    return time;
+                for (int i = 0; i < repeatDepth; i++)
+                    time += repeatIntervals[i] * currentRepeatIterations[i];
+
+                return time;
             }
 
             for (int lineNumber = 0; lineNumber < chromaLines.Length; lineNumber++)
@@ -443,31 +449,29 @@ namespace SpeenChroma2
                         if (elems[2] != "interval")
                             throw new Exception("Invalid instruction. Usage: \"Repeat X interval Y\"");
 
-                        if (repeating)
-                            throw new Exception("Nested repeat blocks are not supported");
-
-                        repeating = true;
-                        repeatCount = ParseInt(elems[1]);
-                        repeatInterval = ParseFloat(elems[3]);
-                        repeatLineBeginning = lineNumber;
+                        repeatDepth++;
+                        repeatCounts.Add(ParseInt(elems[1]));
+                        repeatIntervals.Add(ParseFloat(elems[3]));
+                        repeatLineBeginnings.Add(lineNumber);
+                        currentRepeatIterations.Add(0);
                         break;
                     }
 
                     case "endrepeat":
                     {
-                        if (!repeating)
+                        if (repeatDepth <= 0)
                             throw new Exception("Unexpected EndRepeat instruction");
-                        if (++currentRepeatIteration != repeatCount)
+                        if (++currentRepeatIterations[repeatDepth - 1] != repeatCounts[repeatDepth - 1])
                         {
-                            lineNumber = repeatLineBeginning;
+                            lineNumber = repeatLineBeginnings[repeatDepth - 1];
                             continue;
                         }
 
-                        repeatCount = 0;
-                        currentRepeatIteration = 0;
-                        repeatInterval = 0f;
-                        repeatLineBeginning = 0;
-                        repeating = false;
+                        repeatDepth--;
+                        repeatCounts.RemoveAt(repeatDepth);
+                        currentRepeatIterations.RemoveAt(repeatDepth);
+                        repeatIntervals.RemoveAt(repeatDepth);
+                        repeatLineBeginnings.RemoveAt(repeatDepth);
                         break;
                     }
 
@@ -499,6 +503,9 @@ namespace SpeenChroma2
                     }
                 }
             }
+
+            if (repeatDepth > 0)
+                throw new Exception($"Missing {repeatDepth} EndRepeat instruction" + (repeatDepth == 1 ? "s" : ""));
 
             if (dict.Count == 0)
                 return dict;
