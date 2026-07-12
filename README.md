@@ -1,3 +1,5 @@
+### This repository is moved to [codeberg](https://codeberg.org/Raoul1808/SpeenChroma2)
+
 # Speen Chroma 2
  A complete rewrite of Speen Chroma for Spin Rhythm XD versions 1.0 and above.
 
